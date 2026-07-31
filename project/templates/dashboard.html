@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerCast Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+  <div class="nav-left">
+    <div class="logo"><i class="fa-solid fa-brain"></i> CareerCast</div>
+  </div>
+  <div class="nav-right">
+    <div class="user"><i class="fa-solid fa-user"></i> {{ username }}</div>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <span class="badge">AI POWERED PLATFORM</span>
+  <h1>Career Intelligence Starts Here.</h1>
+  <p>
+    Upload your resume and let artificial intelligence analyze your profile,
+    predict suitable careers, identify missing skills, and recommend
+    improvements to increase your employability.
+  </p>
+</section>
+
+<!-- ================= UPLOAD ================= -->
+<section class="upload-section">
+  <div class="upload-card">
+    <h2>Upload Resume</h2>
+    <p>Supported files: PDF • DOCX • TXT</p>
+
+    <label class="upload-box" id="uploadBox">
+      <input type="file" id="resumeUpload" accept=".pdf,.docx,.txt" hidden>
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <h3 id="uploadTitle">Drag &amp; Drop Resume Here</h3>
+      <span id="uploadSub">or Click to Browse</span>
+    </label>
+
+    <button id="analyzeBtn" disabled>Analyze Resume</button>
+  </div>
+</section>
+
+<!-- ================= RESULT CARDS ================= -->
+<section class="dashboard-cards">
+
+  <div class="card">
+    <div class="icon blue"><i class="fa-solid fa-file-lines"></i></div>
+    <h3>Resume Parsing</h3>
+    <p>Extract education, skills, and experience using NER.</p>
+  </div>
+
+  <div class="card">
+    <div class="icon orange"><i class="fa-solid fa-briefcase"></i></div>
+    <h3>Career Prediction</h3>
+    <p>Predict the most suitable career using AI and Machine Learning.</p>
+  </div>
+
+  <div class="card">
+    <div class="icon purple"><i class="fa-solid fa-lightbulb"></i></div>
+    <h3>AI Suggestions</h3>
+    <p>Get personalized career guidance and skill improvement suggestions.</p>
+  </div>
+
+</section>
+
+<!-- ================= RESULT SECTION ================= -->
+<section class="results" id="resultsSection">
+  <h2>Analysis Results</h2>
+
+  <div class="result-box" id="resultBox">
+    <p>Upload a resume and click <strong>Analyze Resume</strong> to see AI-generated insights.</p>
+  </div>
+</section>
+
+<!-- ================= ANALYZING MODAL ================= -->
+<div class="modal-overlay" id="analyzingModal">
+  <div class="modal-card">
+    <div class="modal-spinner"></div>
+    <h3>Analyzing Your Resume</h3>
+    <ul class="modal-steps" id="modalSteps">
+      <li data-step="parse"><i class="fa-solid fa-circle-notch fa-spin"></i> Parsing resume text</li>
+      <li data-step="extract"><i class="fa-regular fa-circle"></i> Extracting skills &amp; education</li>
+      <li data-step="predict"><i class="fa-regular fa-circle"></i> Predicting career fit</li>
+      <li data-step="match"><i class="fa-regular fa-circle"></i> Matching best-fit roles</li>
+    </ul>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
