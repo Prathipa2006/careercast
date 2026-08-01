@@ -26,9 +26,4 @@ Open (https://careercast.onrender.com/) in your browser.
 - Runs skill-to-role matching → specific role suggestion (e.g. Data Scientist) with match % and skill gaps
 - Frontend renders everything: highlighted skills, accuracy, ranked roles, best-match verdict
 
-## Notes
-- SpaCy is optional. If not installed, the app automatically falls back to keyword-based
-  skill/education extraction so it still runs. To use real SpaCy NER:
-  `pip install spacy && python -m spacy download en_core_web_sm`
-- `ROLE_SKILL_MAP` in `app.py` is a starting reference — expand it with more roles/skills
-  as needed (ideally backed by a real source like O*NET).
+
