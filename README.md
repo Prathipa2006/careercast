@@ -17,7 +17,7 @@ python train_model.py
 ```
 python app.py
 ```
-Open http://127.0.0.1:5000 in your browser.
+Open (https://careercast.onrender.com/) in your browser.
 
 ## What it does
 - Drag-and-drop a resume (.pdf / .docx / .txt)
