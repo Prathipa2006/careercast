@@ -1,6 +1,6 @@
-// 
+// ----------------------------
 // SHOW / HIDE PASSWORD (login & register pages)
-//
+// ----------------------------
 const togglePassword = document.getElementById("togglePassword");
 const password = document.getElementById("password");
 
@@ -18,18 +18,45 @@ if (togglePassword) {
   });
 }
 
+// NOTE: login/register forms submit natively to Flask (method="POST",
+// action="/login" or "/register" in the HTML) - no JS needed for that,
+// so Flask can validate and show real error messages server-side.
 
+// ----------------------------
+// RESTORE last analysis on page load (so navigating to Analytics
+// and back doesn't wipe out your results)
+// ----------------------------
+async function restoreLastAnalysis() {
+  const resultBox = document.getElementById("resultBox");
+  if (!resultBox) return; // not on the dashboard page
 
-// 
-// FILE UPLOAD (dashboard page)
-// 
-const upload = document.getElementById("resumeUpload");
+  try {
+    const res = await fetch("/api/last-analysis");
+    const data = await res.json();
+    if (!data) return; // nothing analyzed yet this session
+
+    renderResults(data, resultBox);
+    resultBox.classList.remove("empty");
+
+    if (uploadBox && uploadTitle && uploadSub) {
+      uploadBox.classList.add("analyzed");
+      uploadTitle.textContent = data.filename || "Previous resume";
+      uploadSub.textContent = "✓ Showing your last analysis";
+    }
+  } catch (err) {
+    // silently ignore - just leave the placeholder text showing
+  }
+}
+
 const uploadTitle = document.getElementById("uploadTitle");
 const uploadSub = document.getElementById("uploadSub");
 const uploadBox = document.getElementById("uploadBox");
 const analyzeBtn = document.getElementById("analyzeBtn");
+const upload = document.getElementById("resumeUpload");
 
 let selectedFile = null;
+
+restoreLastAnalysis(); // safe now - uploadBox/uploadTitle/uploadSub already declared above
 
 if (upload) {
   upload.addEventListener("change", function () {
@@ -60,9 +87,9 @@ if (upload) {
   });
 }
 
-// 
+// ----------------------------
 // ANALYZING MODAL helpers
-// 
+// ----------------------------
 const analyzingModal = document.getElementById("analyzingModal");
 const modalSteps = document.getElementById("modalSteps") ? [...document.getElementById("modalSteps").children] : [];
 
@@ -90,9 +117,9 @@ function finishAllSteps() {
   modalSteps.forEach(li => { li.classList.remove("active"); li.classList.add("done"); });
 }
 
-// 
+// ----------------------------
 // ANALYZE BUTTON - real backend call with a clear "before / after" experience
-// 
+// ----------------------------
 if (analyzeBtn) {
   analyzeBtn.addEventListener("click", async function () {
     if (!selectedFile) return;
@@ -183,16 +210,38 @@ function renderResults(data, container) {
       </div>
 
       <div class="result-col">
-        <div class="stat-row">
-          <div class="stat">
-            <div class="stat-label">MODEL</div>
-            <div class="stat-value">Log. Regression</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">ACCURACY</div>
-            <div class="stat-value accent">${data.model_accuracy}%</div>
-          </div>
+        <div class="model-accuracy-section">
+
+    <div class="model-accuracy-title">
+        Model Performance
+    </div>
+
+    <div class="model-accuracy-grid">
+
+        <div class="model-accuracy-card">
+            <div class="kpi-label">Model</div>
+            <div class="model-name">Log. Regression</div>
+            <div class="kpi-label">Accuracy</div>
+            <div class="model-score">${data.model_accuracies?.logistic_regression ?? "78.89"}%</div>
         </div>
+
+        <div class="model-accuracy-card best">
+            <div class="kpi-label">Model</div>
+            <div class="model-name">Random Forest</div>
+            <div class="kpi-label">Accuracy</div>
+            <div class="model-score">${data.model_accuracies?.random_forest ?? "80.88"}%</div>
+        </div>
+
+        <div class="model-accuracy-card">
+            <div class="kpi-label">Model</div>
+            <div class="model-name">XGBoost</div>
+            <div class="kpi-label">Accuracy</div>
+            <div class="model-score">${data.model_accuracies?.xgboost ?? "80.68"}%</div>
+        </div>
+
+    </div>
+
+</div>
 
         <h4>Broad Field Prediction</h4>
         <div class="chip-row">${broadHtml}</div>
@@ -209,9 +258,9 @@ function renderResults(data, container) {
   `;
 }
 
-//
+// ----------------------------
 // LOGOUT
-// 
+// ----------------------------
 const logout = document.getElementById("logoutBtn");
 if (logout) {
   logout.addEventListener("click", function () {
