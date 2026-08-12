@@ -1,0 +1,212 @@
+[
+  {
+    "skill": "java",
+    "cluster": "Software Engineering",
+    "x": -14.867172241210938,
+    "y": 4.008857250213623
+  },
+  {
+    "skill": "c++",
+    "cluster": "Software Engineering",
+    "x": -7.876864433288574,
+    "y": 8.754476547241211
+  },
+  {
+    "skill": "rest api",
+    "cluster": "Software Engineering",
+    "x": 6.5685858726501465,
+    "y": -60.80233383178711
+  },
+  {
+    "skill": "git",
+    "cluster": "Software Engineering",
+    "x": -42.11309814453125,
+    "y": 3.6201090812683105
+  },
+  {
+    "skill": "django",
+    "cluster": "Software Engineering",
+    "x": 61.829959869384766,
+    "y": 2.050084352493286
+  },
+  {
+    "skill": "flask",
+    "cluster": "Software Engineering",
+    "x": 56.28557205200195,
+    "y": -6.259209156036377
+  },
+  {
+    "skill": "node.js",
+    "cluster": "Software Engineering",
+    "x": -4.530394554138184,
+    "y": -59.077266693115234
+  },
+  {
+    "skill": "mongodb",
+    "cluster": "Software Engineering",
+    "x": -2.779510021209717,
+    "y": -50.67643737792969
+  },
+  {
+    "skill": "mysql",
+    "cluster": "Software Engineering",
+    "x": -1.9243112802505493,
+    "y": -34.55720138549805
+  },
+  {
+    "skill": "python",
+    "cluster": "Data Science",
+    "x": 49.54491424560547,
+    "y": 6.199215888977051
+  },
+  {
+    "skill": "statistics",
+    "cluster": "Data Science",
+    "x": 26.16303825378418,
+    "y": -26.24698257446289
+  },
+  {
+    "skill": "pandas",
+    "cluster": "Data Science",
+    "x": 39.70185089111328,
+    "y": -0.5153595209121704
+  },
+  {
+    "skill": "numpy",
+    "cluster": "Data Science",
+    "x": 47.42198944091797,
+    "y": 15.048640251159668
+  },
+  {
+    "skill": "data visualization",
+    "cluster": "Data Science",
+    "x": 13.532041549682617,
+    "y": -11.992810249328613
+  },
+  {
+    "skill": "r programming",
+    "cluster": "Data Science",
+    "x": -6.001959323883057,
+    "y": -12.833460807800293
+  },
+  {
+    "skill": "project management",
+    "cluster": "Product Management",
+    "x": -44.36078643798828,
+    "y": 13.855155944824219
+  },
+  {
+    "skill": "agile",
+    "cluster": "Product Management",
+    "x": -59.04121398925781,
+    "y": 13.481454849243164
+  },
+  {
+    "skill": "scrum",
+    "cluster": "Product Management",
+    "x": -64.2479476928711,
+    "y": 18.956344604492188
+  },
+  {
+    "skill": "leadership",
+    "cluster": "Product Management",
+    "x": -40.620296478271484,
+    "y": 23.45034408569336
+  },
+  {
+    "skill": "communication",
+    "cluster": "Product Management",
+    "x": -33.114845275878906,
+    "y": 35.31682205200195
+  },
+  {
+    "skill": "negotiation",
+    "cluster": "Product Management",
+    "x": -40.052364349365234,
+    "y": 39.82769012451172
+  },
+  {
+    "skill": "machine learning",
+    "cluster": "AI/ML",
+    "x": 12.568551063537598,
+    "y": 17.546476364135742
+  },
+  {
+    "skill": "deep learning",
+    "cluster": "AI/ML",
+    "x": 17.11651039123535,
+    "y": 24.621492385864258
+  },
+  {
+    "skill": "tensorflow",
+    "cluster": "AI/ML",
+    "x": 30.007976531982422,
+    "y": 26.68488121032715
+  },
+  {
+    "skill": "pytorch",
+    "cluster": "AI/ML",
+    "x": 41.20039749145508,
+    "y": 26.36783790588379
+  },
+  {
+    "skill": "computer vision",
+    "cluster": "AI/ML",
+    "x": 3.3595592975616455,
+    "y": 23.117046356201172
+  },
+  {
+    "skill": "nlp",
+    "cluster": "AI/ML",
+    "x": -4.620707988739014,
+    "y": 45.347312927246094
+  },
+  {
+    "skill": "natural language processing",
+    "cluster": "Research",
+    "x": 3.2607438564300537,
+    "y": 44.22320556640625
+  },
+  {
+    "skill": "data analysis",
+    "cluster": "Research",
+    "x": 9.059856414794922,
+    "y": -5.181019306182861
+  },
+  {
+    "skill": "statistics",
+    "cluster": "Research",
+    "x": 20.28022003173828,
+    "y": -30.73404884338379
+  },
+  {
+    "skill": "scikit-learn",
+    "cluster": "Research",
+    "x": 34.54336929321289,
+    "y": 9.213651657104492
+  },
+  {
+    "skill": "accounting",
+    "cluster": "Finance",
+    "x": -39.2599983215332,
+    "y": -23.88703155517578
+  },
+  {
+    "skill": "auditing",
+    "cluster": "Finance",
+    "x": -47.46946716308594,
+    "y": -22.189090728759766
+  },
+  {
+    "skill": "financial modeling",
+    "cluster": "Finance",
+    "x": -31.24160385131836,
+    "y": -28.88442611694336
+  },
+  {
+    "skill": "excel",
+    "cluster": "Finance",
+    "x": 1.708253026008606,
+    "y": -21.288604736328125
+  }
+]
