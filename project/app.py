@@ -1,5 +1,5 @@
 """
-CareerCast - Milestone 1 Backend
+CareerCast - Milestone 2 Backend
 ---------------------------------------------------------------
 Flask app that:
   1. Serves the drag-and-drop frontend (templates/index.html)
@@ -7,14 +7,18 @@ Flask app that:
   3. Extracts text, then runs:
        - skill / education extraction  (SpaCy if installed, else
          keyword-matching fallback so this always runs)
-       - TF-IDF + Logistic Regression prediction (broad field,
-         trained by train_model.py)
+       - TF-IDF + Random Forest prediction (broad field, tuned with
+         cross-validated hyperparameter search - see career_pred_ml.ipynb
+         Cell A2/I. Random Forest was chosen over Logistic Regression
+         and XGBoost because it was the only model with a healthy
+         train/test gap (0.05) - the others overfit (gap > 0.15).)
        - skill-to-role matching (specific role suggestions + gaps)
   4. Returns everything as JSON for the frontend to render
 
 Run:
-    python train_model.py      # once, to create model/ artifacts
     python app.py               # starts the server on :5000
+    (model/best_model.pkl must already exist - saved from the
+    notebook's Cell I after training Random Forest)
 """
 
 import io
@@ -48,6 +52,22 @@ def init_db():
             password_hash TEXT NOT NULL
         )
     """)
+    conn.commit()
+
+    # If the table already existed from an OLDER version of this app
+    # (e.g. with a 'username' column instead of 'email'), fail clearly
+    # here instead of crashing later with a confusing OperationalError.
+    cols = [row[1] for row in conn.execute("PRAGMA table_info(users)")]
+    if "email" not in cols:
+        conn.close()
+        raise RuntimeError(
+            f"\n\n'{DB_PATH}' has an outdated schema (missing 'email' column) - "
+            f"it's left over from an older version of this app.\n"
+            f"FIX: stop the server, DELETE the file '{DB_PATH}' from your project "
+            f"folder, then run 'python app.py' again. A fresh database with the "
+            f"correct schema will be created automatically.\n"
+        )
+
     # Seed two demo accounts, only if the table is empty, so restarting
     # the app doesn't reset custom accounts you register later.
     existing = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
@@ -170,7 +190,15 @@ def _load_pickle(path, friendly_name):
 
 
 tfidf = _load_pickle(f"{MODEL_DIR}/tfidf_vectorizer.pkl", "TF-IDF vectorizer")
-logreg = _load_pickle(f"{MODEL_DIR}/logreg_model.pkl", "Logistic Regression model")
+
+# Milestone 2: ALL THREE models are kept and loaded (not just one).
+# At prediction time, all 3 vote and whichever model reports the
+# HIGHEST confidence on that specific resume is used for the final
+# prediction - see predict_with_best_model() below.
+logreg_model = _load_pickle(f"{MODEL_DIR}/logreg_model.pkl", "Logistic Regression model")
+rf_model = _load_pickle(f"{MODEL_DIR}/rf_model.pkl", "Random Forest model")
+xgb_model = _load_pickle(f"{MODEL_DIR}/xgb_model.pkl", "XGBoost model")
+label_encoder = _load_pickle(f"{MODEL_DIR}/label_encoder.pkl", "XGBoost label encoder")
 
 # Optional: only used if your pipeline includes a feature selection step
 # (e.g. SelectKBest) between TF-IDF and the classifier. If you don't have
@@ -185,7 +213,16 @@ if os.path.exists(SELECTOR_PATH) and os.path.getsize(SELECTOR_PATH) > 0:
 with open(f"{MODEL_DIR}/metrics.json") as f:
     METRICS = json.load(f)
 
-OVERALL_ACCURACY = METRICS["accuracy"]
+# Milestone 2 analytics data (for the dashboard page) - optional, so
+# the app still runs even before you've generated these in the notebook.
+def _load_json_optional(path, default):
+    if os.path.exists(path) and os.path.getsize(path) > 0:
+        with open(path) as f:
+            return json.load(f)
+    return default
+
+MODEL_COMPARISON = _load_json_optional(f"{MODEL_DIR}/model_comparison.json", [])
+TSNE_DATA = _load_json_optional(f"{MODEL_DIR}/tsne_data.json", [])
 
 
 def vectorize(text_list):
@@ -196,6 +233,36 @@ def vectorize(text_list):
     if selector is not None:
         vec = selector.transform(vec)
     return vec
+
+
+def predict_with_best_model(vec):
+    """
+    Runs all 3 models on the same input, and picks whichever model
+    reports the HIGHEST confidence (max probability) for its own
+    top prediction. Returns the winning model's full prediction
+    distribution, plus which model was selected (for transparency).
+
+    NOTE: overfit models tend to be overconfident, so this can favor
+    a model that memorized rather than generalized - documented as a
+    known limitation in the Milestone 2 report.
+    """
+    lr_probs = logreg_model.predict_proba(vec)[0]
+    rf_probs = rf_model.predict_proba(vec)[0]
+    xgb_probs_enc = xgb_model.predict_proba(vec)[0]
+
+    lr_classes = logreg_model.classes_
+    rf_classes = rf_model.classes_
+    xgb_classes = label_encoder.inverse_transform(range(len(xgb_probs_enc)))
+
+    candidates = [
+        ("Logistic Regression", lr_probs, lr_classes),
+        ("Random Forest", rf_probs, rf_classes),
+        ("XGBoost", xgb_probs_enc, xgb_classes),
+    ]
+
+    # pick whichever model's TOP prediction has the highest confidence
+    best_name, best_probs, best_classes = max(candidates, key=lambda c: c[1].max())
+    return best_name, best_probs, best_classes
 
 # ------------------------------------------------------------------
 # Optional SpaCy NER (falls back to keyword matching automatically
@@ -210,7 +277,7 @@ except Exception:
     NLP = None
 
 SKILLS_LIST = [
-    "python", "java", "c++", "sql", "r programming", "scala","c"
+    "python", "java", "c++", "sql", "r programming", "scala",
     "machine learning", "deep learning", "nlp", "natural language processing",
     "computer vision", "tensorflow", "pytorch", "keras", "scikit-learn",
     "pandas", "numpy", "data analysis", "data visualization", "statistics",
@@ -324,6 +391,30 @@ def home():
     return render_template("dashboard.html", username=session.get("email"))
 
 
+@app.route("/milestone2-dashboard")
+@login_required
+def milestone2_dashboard():
+    return render_template("milestone2_dashboard.html", username=session.get("email"))
+
+
+@app.route("/api/analytics")
+@login_required
+def api_analytics():
+    """
+    Feeds the Milestone 2 dashboard:
+      - model_comparison: Macro F1 per model (bar chart)
+      - tsne: 2D skill embedding coordinates (scatter plot)
+      - top5: most recent resume's role recommendations, if any
+              (null until the user has analyzed at least one resume
+              in this session - the frontend shows a placeholder then)
+    """
+    return jsonify({
+        "model_comparison": MODEL_COMPARISON,
+        "tsne": TSNE_DATA,
+        "top5": session.get("last_role_matches"),
+    })
+
+
 @app.route("/analyze", methods=["POST"])
 @login_required
 def analyze():
@@ -349,10 +440,10 @@ def analyze():
         # 1. NER-style extraction
         skills, education = extract_entities(text)
 
-        # 2. Broad-field prediction (trained Logistic Regression)
+        # 2. Broad-field prediction - all 3 models vote, highest
+        # confidence model wins (Milestone 2 multi-model system)
         vec = vectorize([text])
-        probs = logreg.predict_proba(vec)[0]
-        classes = logreg.classes_
+        model_used, probs, classes = predict_with_best_model(vec)
         top3_idx = probs.argsort()[-3:][::-1]
         broad_field_predictions = [
             {"category": str(classes[i]), "confidence": round(float(probs[i]) * 100, 1)}
@@ -360,14 +451,21 @@ def analyze():
         ]
 
         # 3. Specific role matching + skill gaps
-        role_matches = match_roles(skills, top_n=3)
+        role_matches = match_roles(skills, top_n=5)
+
+        # Save this analysis so the Milestone 2 dashboard's "Top-5
+        # Career Recommendations" panel can show real results
+        session["last_role_matches"] = role_matches
 
         return jsonify({
             "filename": file.filename,
             "extracted_text_preview": text[:6000],  # generous cap, just to protect against extreme outliers
             "skills": skills,
             "education": education,
-            "model_accuracy": OVERALL_ACCURACY,
+            "model_used": model_used,
+            "model_accuracy": METRICS.get("models", {}).get(
+                model_used.lower().replace(" ", "_"), {}
+            ).get("accuracy", "N/A"),
             "broad_field_predictions": broad_field_predictions,
             "role_matches": role_matches,
             "best_role": role_matches[0]["role"] if role_matches else None,
@@ -457,15 +555,15 @@ def analyze_profile():
 
     try:
         vec = vectorize([synthetic_text])
-        probs = logreg.predict_proba(vec)[0]
-        classes = logreg.classes_
+        model_used, probs, classes = predict_with_best_model(vec)
         top3_idx = probs.argsort()[-3:][::-1]
         broad_field_predictions = [
             {"category": str(classes[i]), "confidence": round(float(probs[i]) * 100, 1)}
             for i in top3_idx
         ]
 
-        role_matches = match_roles(recognized_skills, top_n=3)
+        role_matches = match_roles(recognized_skills, top_n=5)
+        session["last_role_matches"] = role_matches
 
         return jsonify({
             "name": name,
@@ -473,7 +571,10 @@ def analyze_profile():
             "unrecognized_skills": unrecognized_skills,
             "education": education_found,
             "experience_years": experience_years,
-            "model_accuracy": OVERALL_ACCURACY,
+            "model_used": model_used,
+            "model_accuracy": METRICS.get("models", {}).get(
+                model_used.lower().replace(" ", "_"), {}
+            ).get("accuracy", "N/A"),
             "broad_field_predictions": broad_field_predictions,
             "role_matches": role_matches,
             "best_role": role_matches[0]["role"] if role_matches else None,
