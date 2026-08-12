@@ -18,9 +18,7 @@ if (togglePassword) {
   });
 }
 
-// NOTE: login/register forms submit natively to Flask (method="POST",
-// action="/login" or "/register" in the HTML) - no JS needed for that,
-// so Flask can validate and show real error messages server-side.
+
 
 // 
 // FILE UPLOAD (dashboard page)
