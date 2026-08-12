@@ -12,19 +12,46 @@
 <body>
 
 <!-- ================= NAVBAR ================= -->
+
 <nav>
-  <div class="nav-left">
-    <div class="logo"><i class="fa-solid fa-brain"></i> CareerCast</div>
-  </div>
-  <div class="nav-right">
-    <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Dashboard</a>
-    <div class="user"><i class="fa-solid fa-user"></i> {{ username }}</div>
-    <button id="logoutBtn">Logout</button>
-  </div>
+    <div class="nav-left">
+        <div class="logo">
+            <i class="fa-solid fa-brain"></i>
+            CareerCast
+        </div>
+    </div>
+
+    <div class="nav-right">
+
+        <!-- DASHBOARD -->
+        <a href="/" class="nav-link">
+            <i class="fa-solid fa-house"></i>
+            Dashboard
+        </a>
+
+        <!-- ANALYTICS -->
+        <a href="/milestone2-dashboard" class="nav-link active">
+            <i class="fa-solid fa-chart-line"></i>
+            Analytics
+        </a>
+
+        <!-- USER -->
+        <div class="user">
+            <i class="fa-solid fa-user"></i>
+            {{ username }}
+        </div>
+
+        <!-- LOGOUT -->
+        <button id="logoutBtn">
+            Logout
+        </button>
+
+    </div>
 </nav>
 
+
 <section class="analytics-header">
-  <h1><i class="fa-solid fa-chart-line"></i> CareerCast Analytics: Milestone 2 Dashboard</h1>
+  <h1><i class="fa-solid fa-chart-line"></i> CareerCast Analytics: Dashboard</h1>
   <p>Model performance, career recommendations, and skill embedding visualization.</p>
 </section>
 
