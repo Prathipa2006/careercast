@@ -1,8 +1,8 @@
-/* ============================================================
+/* 
    CareerCast - Shared Stylesheet
    Login/Register: split-screen brand design
    Dashboard: light theme
-============================================================ */
+ */
 
 :root{
   --primary:#4F46E5;
@@ -19,9 +19,9 @@
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{ font-family:'Poppins', sans-serif; color:var(--text-dark); }
 
-/* ============================================================
+/* 
    LOGIN / REGISTER PAGE (split screen)
-============================================================ */
+ */
 body.login-page{
   min-height:100vh;
   background:var(--bg-light);
@@ -104,9 +104,9 @@ body.login-page{
 }
 .feature-list i{ color:#A7F3D0; }
 
-/* ============================================================
+/* 
    DASHBOARD PAGE (light theme)
-============================================================ */
+ */
 body:not(.login-page){ background:var(--bg-light); }
 
 nav{
@@ -218,9 +218,9 @@ nav{
 .verdict-text{ font-size:15.5px; font-weight:700; }
 .verdict-text span{ color:var(--primary); }
 
-/* ============================================================
+/*
    ANALYZING MODAL (shown while /analyze is in progress)
-============================================================ */
+ */
 .modal-overlay{
   position:fixed; inset:0; background:rgba(17,24,39,0.55);
   backdrop-filter:blur(3px);
@@ -261,9 +261,9 @@ nav{
 .modal-steps li.done i{ color:var(--accent); }
 .modal-steps li.done i.fa-circle-notch{ display:none; }
 
-/* ============================================================
+/* 
    RESULTS - clear before/after states
-============================================================ */
+ */
 .result-box{ transition:box-shadow .3s ease, border-color .3s ease; }
 .result-box.just-updated{
   animation:resultPulse 1s ease;
@@ -281,3 +281,54 @@ nav{
 
 .upload-box.analyzed{ border-color:var(--accent); background:#F0FDF4; }
 .upload-box.analyzed i{ color:var(--accent); }
+
+/* 
+   MILESTONE 2 ANALYTICS DASHBOARD
+   (reuses the same --primary / --text-dark / --border variables
+   and Poppins font already defined above - no new palette)
+ */
+.nav-link{
+  color:var(--text-muted); text-decoration:none; font-size:13.5px;
+  display:flex; align-items:center; gap:6px;
+}
+.nav-link:hover{ color:var(--primary); }
+
+.analytics-header{ max-width:1100px; margin:0 auto; padding:40px 24px 8px; }
+.analytics-header h1{
+  font-size:24px; font-weight:700; display:flex; align-items:center; gap:10px;
+  margin-bottom:6px;
+}
+.analytics-header h1 i{ color:var(--primary); }
+.analytics-header p{ color:var(--text-muted); font-size:13.5px; }
+
+.analytics-section{ max-width:1100px; margin:0 auto; padding:16px 24px; }
+.analytics-section.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+@media(max-width:820px){ .analytics-section.two-col{ grid-template-columns:1fr; } }
+
+.analytics-card{
+  background:var(--white); border:1px solid var(--border); border-radius:14px;
+  padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.03);
+}
+.analytics-card.full-width{ width:100%; }
+
+.card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.card-header h2{ font-size:15.5px; font-weight:700; }
+
+.chart-wrap{ position:relative; height:280px; }
+
+.top5-list{ display:flex; flex-direction:column; gap:10px; }
+.top5-row{
+  display:flex; align-items:center; gap:14px; padding:11px 14px;
+  background:var(--bg-light); border-radius:10px; font-size:13.5px;
+}
+.top5-row .rank{
+  width:24px; height:24px; border-radius:50%; background:var(--primary-light);
+  color:var(--primary); font-weight:700; font-size:12px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.top5-row .role-name{ flex:1; font-weight:600; }
+.top5-row .confidence{ color:var(--primary); font-weight:700; font-size:13px; }
+
+.tsne-legend{ display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+.legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-muted); }
+.legend-item i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
