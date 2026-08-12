@@ -3,3 +3,6 @@ pandas
 scikit-learn
 gunicorn
 psycopg2-binary
+xgboost
+pypdf
+joblib
