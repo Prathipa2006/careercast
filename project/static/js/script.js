@@ -1,6 +1,6 @@
-// ----------------------------
+// 
 // SHOW / HIDE PASSWORD (login & register pages)
-// ----------------------------
+//
 const togglePassword = document.getElementById("togglePassword");
 const password = document.getElementById("password");
 
@@ -22,9 +22,9 @@ if (togglePassword) {
 // action="/login" or "/register" in the HTML) - no JS needed for that,
 // so Flask can validate and show real error messages server-side.
 
-// ----------------------------
+// 
 // FILE UPLOAD (dashboard page)
-// ----------------------------
+// 
 const upload = document.getElementById("resumeUpload");
 const uploadTitle = document.getElementById("uploadTitle");
 const uploadSub = document.getElementById("uploadSub");
@@ -62,9 +62,9 @@ if (upload) {
   });
 }
 
-// ----------------------------
+// 
 // ANALYZING MODAL helpers
-// ----------------------------
+// 
 const analyzingModal = document.getElementById("analyzingModal");
 const modalSteps = document.getElementById("modalSteps") ? [...document.getElementById("modalSteps").children] : [];
 
@@ -92,9 +92,9 @@ function finishAllSteps() {
   modalSteps.forEach(li => { li.classList.remove("active"); li.classList.add("done"); });
 }
 
-// ----------------------------
+// 
 // ANALYZE BUTTON - real backend call with a clear "before / after" experience
-// ----------------------------
+// 
 if (analyzeBtn) {
   analyzeBtn.addEventListener("click", async function () {
     if (!selectedFile) return;
@@ -211,9 +211,9 @@ function renderResults(data, container) {
   `;
 }
 
-// ----------------------------
+//
 // LOGOUT
-// ----------------------------
+// 
 const logout = document.getElementById("logoutBtn");
 if (logout) {
   logout.addEventListener("click", function () {
