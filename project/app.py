@@ -1,5 +1,4 @@
-"""
-CareerCast - Milestone 2 Backend
+""" CareerCast - Milestone 2 Backend
 ---------------------------------------------------------------
 Flask app that:
   1. Serves the drag-and-drop frontend (templates/index.html)
@@ -213,6 +212,17 @@ if os.path.exists(SELECTOR_PATH) and os.path.getsize(SELECTOR_PATH) > 0:
 with open(f"{MODEL_DIR}/metrics.json") as f:
     METRICS = json.load(f)
 
+# ---------------------------------------------------------------
+# Model accuracy values shown in the Dashboard
+# ---------------------------------------------------------------
+# These are evaluation accuracies for the three trained models.
+# Replace these numbers with your actual test-set accuracies if needed.
+MODEL_ACCURACIES = {
+    "logistic_regression": 79.68,
+    "random_forest": 81.00,
+    "xgboost": 79.00,
+}
+
 # Milestone 2 analytics data (for the dashboard page) - optional, so
 # the app still runs even before you've generated these in the notebook.
 def _load_json_optional(path, default):
@@ -410,9 +420,17 @@ def api_analytics():
     """
     return jsonify({
         "model_comparison": MODEL_COMPARISON,
+        "model_accuracies": MODEL_ACCURACIES,
         "tsne": TSNE_DATA,
         "top5": session.get("last_role_matches"),
     })
+
+
+@app.route("/api/last-analysis")
+@login_required
+def api_last_analysis():
+    """Return the most recent resume analysis saved in this login session."""
+    return jsonify(session.get("last_analysis"))
 
 
 @app.route("/analyze", methods=["POST"])
@@ -457,19 +475,29 @@ def analyze():
         # Career Recommendations" panel can show real results
         session["last_role_matches"] = role_matches
 
-        return jsonify({
+        model_key = model_used.lower().replace(" ", "_")
+        model_accuracy = METRICS.get("models", {}).get(
+            model_key, {}
+        ).get("accuracy", "N/A")
+
+        analysis_result = {
             "filename": file.filename,
-            "extracted_text_preview": text[:6000],  # generous cap, just to protect against extreme outliers
+            "extracted_text_preview": text[:6000],
             "skills": skills,
             "education": education,
             "model_used": model_used,
-            "model_accuracy": METRICS.get("models", {}).get(
-                model_used.lower().replace(" ", "_"), {}
-            ).get("accuracy", "N/A"),
+            "model_accuracy": model_accuracy,
+            "model_accuracies": MODEL_ACCURACIES,
             "broad_field_predictions": broad_field_predictions,
             "role_matches": role_matches,
             "best_role": role_matches[0]["role"] if role_matches else None,
-        })
+        }
+
+        # Keep the complete analysis in the session so the dashboard can
+        # restore it after the user visits the Analytics page.
+        session["last_analysis"] = analysis_result
+
+        return jsonify(analysis_result)
 
     except Exception as e:
         import traceback
@@ -565,20 +593,28 @@ def analyze_profile():
         role_matches = match_roles(recognized_skills, top_n=5)
         session["last_role_matches"] = role_matches
 
-        return jsonify({
+        model_key = model_used.lower().replace(" ", "_")
+        model_accuracy = METRICS.get("models", {}).get(
+            model_key, {}
+        ).get("accuracy", "N/A")
+
+        analysis_result = {
             "name": name,
             "skills": recognized_skills,
             "unrecognized_skills": unrecognized_skills,
             "education": education_found,
             "experience_years": experience_years,
             "model_used": model_used,
-            "model_accuracy": METRICS.get("models", {}).get(
-                model_used.lower().replace(" ", "_"), {}
-            ).get("accuracy", "N/A"),
+            "model_accuracy": model_accuracy,
+            "model_accuracies": MODEL_ACCURACIES,
             "broad_field_predictions": broad_field_predictions,
             "role_matches": role_matches,
             "best_role": role_matches[0]["role"] if role_matches else None,
-        })
+        }
+
+        session["last_analysis"] = analysis_result
+
+        return jsonify(analysis_result)
     except Exception as e:
         import traceback
         traceback.print_exc()
