@@ -26,4 +26,5 @@ Open (https://careercast.onrender.com/) in your browser.
 - Runs skill-to-role matching → specific role suggestion (e.g. Data Scientist) with match % and skill gaps
 - Frontend renders everything: highlighted skills, accuracy, ranked roles, best-match verdict
 
+## implemented random forest and xgboost
 
