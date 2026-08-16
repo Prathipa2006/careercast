@@ -1,6 +1,3 @@
-// ----------------------------
-// SHOW / HIDE PASSWORD (login & register pages)
-// ----------------------------
 const togglePassword = document.getElementById("togglePassword");
 const password = document.getElementById("password");
 
@@ -17,15 +14,6 @@ if (togglePassword) {
     }
   });
 }
-
-// NOTE: login/register forms submit natively to Flask (method="POST",
-// action="/login" or "/register" in the HTML) - no JS needed for that,
-// so Flask can validate and show real error messages server-side.
-
-// ----------------------------
-// RESTORE last analysis on page load (so navigating to Analytics
-// and back doesn't wipe out your results)
-// ----------------------------
 async function restoreLastAnalysis() {
   const resultBox = document.getElementById("resultBox");
   if (!resultBox) return; // not on the dashboard page
@@ -86,10 +74,6 @@ if (upload) {
     }
   });
 }
-
-// ----------------------------
-// ANALYZING MODAL helpers
-// ----------------------------
 const analyzingModal = document.getElementById("analyzingModal");
 const modalSteps = document.getElementById("modalSteps") ? [...document.getElementById("modalSteps").children] : [];
 
@@ -174,6 +158,8 @@ if (analyzeBtn) {
 }
 
 function renderResults(data, container) {
+  currentUserSkills = data.skills || [];  // feed the skill-gap checker below
+
   const skillsHtml = data.skills.length
     ? data.skills.map(s => `<span class="chip skill-chip">${s}</span>`).join("")
     : `<span class="muted">No recognized skills found</span>`;
@@ -258,12 +244,100 @@ function renderResults(data, container) {
   `;
 }
 
-// ----------------------------
+// 
 // LOGOUT
-// ----------------------------
+// 
 const logout = document.getElementById("logoutBtn");
 if (logout) {
   logout.addEventListener("click", function () {
     window.location.href = "/logout";
   });
 }
+
+// ----------------------------
+// SKILL GAP FOR A TARGET DOMAIN (mentor's requested feature)
+// User picks ANY career, sees exactly what they're missing for it -
+// independent of what the model actually predicted.
+// ----------------------------
+let currentUserSkills = [];  // updated every time a resume is analyzed
+
+const targetRoleSelect = document.getElementById("targetRoleSelect");
+const checkGapBtn = document.getElementById("checkGapBtn");
+const gapResultBox = document.getElementById("gapResultBox");
+
+async function loadAvailableRoles() {
+  if (!targetRoleSelect) return;
+  try {
+    const res = await fetch("/api/available-roles");
+    const roles = await res.json();
+    roles.forEach(role => {
+      const opt = document.createElement("option");
+      opt.value = role;
+      opt.textContent = role;
+      targetRoleSelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Could not load available roles:", err);
+  }
+}
+
+if (targetRoleSelect) {
+  targetRoleSelect.addEventListener("change", () => {
+    checkGapBtn.disabled = !targetRoleSelect.value;
+  });
+}
+
+if (checkGapBtn) {
+  checkGapBtn.addEventListener("click", async () => {
+    const targetRole = targetRoleSelect.value;
+    if (!targetRole) return;
+
+    checkGapBtn.disabled = true;
+    checkGapBtn.textContent = "Checking...";
+
+    try {
+      const res = await fetch("/api/skill-gap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_role: targetRole, skills: currentUserSkills }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        gapResultBox.innerHTML = `<p class="result-error">⚠️ ${data.error || "Something went wrong."}</p>`;
+        return;
+      }
+
+      const matchedHtml = data.matched_skills.length
+        ? data.matched_skills.map(s => `<span class="chip skill-chip">${s}</span>`).join("")
+        : `<span class="muted">None yet</span>`;
+
+      const missingHtml = data.missing_skills.length
+        ? data.missing_skills.map(s => `<span class="chip edu-chip">${s}</span>`).join("")
+        : `<span class="muted">None - you have all core skills for this role!</span>`;
+
+      const suggestionsHtml = data.suggestions.length
+        ? `<ul style="margin-top:10px; padding-left:20px;">${data.suggestions.map(s => `<li style="margin-bottom:6px; font-size:13px; color:var(--text-muted);">${s}</li>`).join("")}</ul>`
+        : "";
+
+      gapResultBox.innerHTML = `
+        <div class="verdict" style="margin-top:0;">
+          <div class="verdict-label">SKILL GAP FOR ${data.target_role.toUpperCase()}</div>
+          <div class="verdict-text">${data.match_percent}% match</div>
+        </div>
+        <h4 style="margin-top:16px;">You already have</h4>
+        <div class="chip-row">${matchedHtml}</div>
+        <h4 style="margin-top:16px;">You're missing</h4>
+        <div class="chip-row">${missingHtml}</div>
+        ${suggestionsHtml}
+      `;
+    } catch (err) {
+      gapResultBox.innerHTML = `<p class="result-error">⚠️ Could not reach the server.</p>`;
+    } finally {
+      checkGapBtn.disabled = false;
+      checkGapBtn.textContent = "Check My Skill Gap";
+    }
+  });
+}
+
+loadAvailableRoles();
