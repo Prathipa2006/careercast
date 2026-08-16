@@ -1,9 +1,3 @@
-/* ============================================================
-   CareerCast - Shared Stylesheet
-   Login/Register: split-screen brand design
-   Dashboard: light theme
-============================================================ */
-
 :root{
   --primary:#4F46E5;
   --primary-light:#EEF2FF;
@@ -19,9 +13,9 @@
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{ font-family:'Poppins', sans-serif; color:var(--text-dark); }
 
-/* ============================================================
+/* 
    LOGIN / REGISTER PAGE (split screen)
-============================================================ */
+ */
 body.login-page{
   min-height:100vh;
   background:var(--bg-light);
@@ -109,7 +103,7 @@ body.login-page{
 ============================================================ */
 body:not(.login-page){ background:var(--bg-light); }
 
-/* ================= NAVBAR ================= */
+/*  NAVBAR  */
 
 nav {
     width: 100%;
@@ -256,6 +250,17 @@ nav {
 }
 .upload-card button:disabled{ opacity:.45; cursor:not-allowed; }
 
+.role-select{
+  width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px;
+  font-family:inherit; font-size:14px; background:var(--white); margin-bottom:14px;
+}
+.btn-secondary{
+  padding:12px 22px; border:none; border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),#6366F1); color:#fff;
+  font-family:inherit; font-weight:600; font-size:14px; cursor:pointer;
+}
+.btn-secondary:disabled{ opacity:.45; cursor:not-allowed; }
+
 .dashboard-cards{
   display:grid; grid-template-columns:repeat(3,1fr); gap:22px;
   max-width:960px; margin:0 auto; padding:0 24px 50px;
@@ -318,9 +323,9 @@ nav {
 .verdict-text{ font-size:15.5px; font-weight:700; }
 .verdict-text span{ color:var(--primary); }
 
-/* ============================================================
+/* 
    ANALYZING MODAL (shown while /analyze is in progress)
-============================================================ */
+ */
 .modal-overlay{
   position:fixed; inset:0; background:rgba(17,24,39,0.55);
   backdrop-filter:blur(3px);
