@@ -390,7 +390,64 @@ def match_roles(skills, top_n=3):
         })
     results.sort(key=lambda r: r["match_percent"], reverse=True)
     return results[:top_n]
+def gap_analysis_for_target(skills, target_role):
+    """
+    Milestone 3 - mentor's requested feature: user says 'I'm interested
+    in X domain', and this returns the skill gap for X specifically -
+    regardless of what the model actually predicted for their resume.
+    """
+    if target_role not in ROLE_SKILL_MAP:
+        return None
 
+    skill_set = set(skills)
+    required_set = set(ROLE_SKILL_MAP[target_role])
+    matched = skill_set & required_set
+    missing = required_set - skill_set
+    pct = round(len(matched) / len(required_set) * 100, 1) if required_set else 0
+
+    suggestions = [
+        f"Learn or gain hands-on experience with '{s}' - commonly required for {target_role} roles."
+        for s in sorted(missing)
+    ]
+
+    return {
+        "target_role": target_role,
+        "match_percent": pct,
+        "matched_skills": sorted(matched),
+        "missing_skills": sorted(missing),
+        "suggestions": suggestions,
+    }
+
+
+@app.route("/api/available-roles")
+@login_required
+def api_available_roles():
+    """Lets the frontend populate a dropdown of every role the
+    system knows about, so the user can pick ANY target domain."""
+    return jsonify(sorted(ROLE_SKILL_MAP.keys()))
+
+
+@app.route("/api/skill-gap", methods=["POST"])
+@login_required
+def api_skill_gap():
+    """
+    Mentor's feature: user says 'I'm interested in X domain', and
+    this returns the skill gap + suggestions for X specifically.
+    """
+    data = request.get_json(silent=True) or {}
+    target_role = (data.get("target_role") or "").strip()
+    skills = data.get("skills") or []
+
+    if not target_role:
+        return jsonify({"error": "target_role is required"}), 400
+    if target_role not in ROLE_SKILL_MAP:
+        return jsonify({"error": f"Unknown role '{target_role}'", "available_roles": sorted(ROLE_SKILL_MAP.keys())}), 400
+
+    result = gap_analysis_for_target(skills, target_role)
+    return jsonify(result)
+
+
+# ------------------------------------------------------------------
 
 # ------------------------------------------------------------------
 # Routes
