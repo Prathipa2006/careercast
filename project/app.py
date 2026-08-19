@@ -390,6 +390,8 @@ def match_roles(skills, top_n=3):
         })
     results.sort(key=lambda r: r["match_percent"], reverse=True)
     return results[:top_n]
+
+
 def gap_analysis_for_target(skills, target_role):
     """
     Milestone 3 - mentor's requested feature: user says 'I'm interested
@@ -448,8 +450,6 @@ def api_skill_gap():
 
 
 # ------------------------------------------------------------------
-
-# ------------------------------------------------------------------
 # Routes
 # ------------------------------------------------------------------
 @app.route("/")
@@ -462,6 +462,12 @@ def home():
 @login_required
 def milestone2_dashboard():
     return render_template("milestone2_dashboard.html", username=session.get("email"))
+
+
+@app.route("/skill-gap-analysis")
+@login_required
+def skill_gap_analysis_page():
+    return render_template("skill_gap.html", username=session.get("email"))
 
 
 @app.route("/api/analytics")
