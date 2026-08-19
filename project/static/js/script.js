@@ -1,3 +1,6 @@
+// ----------------------------
+// SHOW / HIDE PASSWORD (login & register pages)
+// ----------------------------
 const togglePassword = document.getElementById("togglePassword");
 const password = document.getElementById("password");
 
@@ -14,6 +17,15 @@ if (togglePassword) {
     }
   });
 }
+
+// NOTE: login/register forms submit natively to Flask (method="POST",
+// action="/login" or "/register" in the HTML) - no JS needed for that,
+// so Flask can validate and show real error messages server-side.
+
+// ----------------------------
+// RESTORE last analysis on page load (so navigating to Analytics
+// and back doesn't wipe out your results)
+// ----------------------------
 async function restoreLastAnalysis() {
   const resultBox = document.getElementById("resultBox");
   if (!resultBox) return; // not on the dashboard page
@@ -74,6 +86,10 @@ if (upload) {
     }
   });
 }
+
+// ----------------------------
+// ANALYZING MODAL helpers
+// ----------------------------
 const analyzingModal = document.getElementById("analyzingModal");
 const modalSteps = document.getElementById("modalSteps") ? [...document.getElementById("modalSteps").children] : [];
 
@@ -244,9 +260,9 @@ function renderResults(data, container) {
   `;
 }
 
-// 
+// ----------------------------
 // LOGOUT
-// 
+// ----------------------------
 const logout = document.getElementById("logoutBtn");
 if (logout) {
   logout.addEventListener("click", function () {
@@ -264,12 +280,53 @@ let currentUserSkills = [];  // updated every time a resume is analyzed
 const targetRoleSelect = document.getElementById("targetRoleSelect");
 const checkGapBtn = document.getElementById("checkGapBtn");
 const gapResultBox = document.getElementById("gapResultBox");
+const currentSkillsPreview = document.getElementById("currentSkillsPreview");
+const noSkillsWarning = document.getElementById("noSkillsWarning");
+
+async function loadCurrentSkillsForGapPage() {
+  // Only runs on the dedicated Skill Gap Analysis page
+  if (!currentSkillsPreview) return;
+
+  try {
+    const res = await fetch("/api/last-analysis");
+    const data = await res.json();
+
+    if (!data || !data.skills || data.skills.length === 0) {
+      currentSkillsPreview.textContent = "none found yet";
+      if (noSkillsWarning) noSkillsWarning.style.display = "block";
+      return;
+    }
+
+    currentUserSkills = data.skills;
+    currentSkillsPreview.textContent = data.skills.join(", ");
+  } catch (err) {
+    currentSkillsPreview.textContent = "could not load";
+    console.error("Could not load last analysis for skill gap page:", err);
+  }
+}
 
 async function loadAvailableRoles() {
   if (!targetRoleSelect) return;
   try {
     const res = await fetch("/api/available-roles");
+
+    if (!res.ok) {
+      const opt = document.createElement("option");
+      opt.textContent = `Error loading roles (status ${res.status}) - try refreshing`;
+      targetRoleSelect.appendChild(opt);
+      console.error("available-roles fetch failed with status:", res.status);
+      return;
+    }
+
     const roles = await res.json();
+
+    if (!Array.isArray(roles) || roles.length === 0) {
+      const opt = document.createElement("option");
+      opt.textContent = "No roles available - check ROLE_SKILL_MAP in app.py";
+      targetRoleSelect.appendChild(opt);
+      return;
+    }
+
     roles.forEach(role => {
       const opt = document.createElement("option");
       opt.value = role;
@@ -277,6 +334,9 @@ async function loadAvailableRoles() {
       targetRoleSelect.appendChild(opt);
     });
   } catch (err) {
+    const opt = document.createElement("option");
+    opt.textContent = "Could not reach server - check console (F12)";
+    targetRoleSelect.appendChild(opt);
     console.error("Could not load available roles:", err);
   }
 }
@@ -341,3 +401,4 @@ if (checkGapBtn) {
 }
 
 loadAvailableRoles();
+loadCurrentSkillsForGapPage();
