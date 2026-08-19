@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerCast - Skill Gap Analysis</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+  <div class="nav-left">
+    <div class="logo"><i class="fa-solid fa-brain"></i> CareerCast</div>
+  </div>
+  <div class="nav-right">
+
+    <a href="/" class="nav-link">
+        <i class="fa-solid fa-house"></i>
+        Dashboard
+    </a>
+
+    <a href="/milestone2-dashboard" class="nav-link">
+        <i class="fa-solid fa-chart-line"></i>
+        Analytics
+    </a>
+
+    <a href="/skill-gap-analysis" class="nav-link active">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+        Skill Gap Analysis
+    </a>
+
+    <div class="user">
+        <i class="fa-solid fa-user"></i>
+        {{ username }}
+    </div>
+
+    <button id="logoutBtn">Logout</button>
+
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <span class="badge">CAREER PLANNING</span>
+  <h1>Interested in a Specific Career?</h1>
+  <p>
+    Pick any career you're interested in — we'll show exactly which skills
+    you're missing for it, even if it wasn't your predicted match, plus
+    actionable suggestions to close the gap.
+  </p>
+</section>
+
+<!-- ================= SKILL GAP FOR A TARGET DOMAIN ================= -->
+<section class="results">
+  <div class="result-box" id="noSkillsWarning" style="display:none;">
+    <p>⚠️ We don't have your skills yet. Please <a href="/" style="color:var(--primary);font-weight:600;">upload and analyze a resume</a> first, then come back here.</p>
+  </div>
+
+  <div class="upload-card" style="max-width:640px; margin:0 auto 30px;">
+    <h2>Choose a Target Career</h2>
+    <p>Your current skills: <span id="currentSkillsPreview" style="color:var(--primary); font-weight:600;">loading...</span></p>
+
+    <select id="targetRoleSelect" class="role-select">
+      <option value="">Select a career...</option>
+    </select>
+    <button id="checkGapBtn" class="btn-secondary" disabled>Check My Skill Gap</button>
+  </div>
+
+  <div class="result-box" id="gapResultBox">
+    <p>Select a career above to see your skill gap analysis.</p>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
