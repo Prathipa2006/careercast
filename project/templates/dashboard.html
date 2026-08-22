@@ -27,6 +27,11 @@
         Analytics
     </a>
 
+    <a href="/skill-gap-analysis" class="nav-link">
+        <i class="fa-solid fa-magnifying-glass-chart"></i>
+        Skill Gap Analysis
+    </a>
+
     <div class="user">
         <i class="fa-solid fa-user"></i>
         {{ username }}
@@ -94,21 +99,6 @@
 
   <div class="result-box" id="resultBox">
     <p>Upload a resume and click <strong>Analyze Resume</strong> to see AI-generated insights.</p>
-  </div>
-</section>
-
-<!-- ================= SKILL GAP FOR A TARGET DOMAIN ================= -->
-<section class="results">
-  <h2>Interested in a Specific Career?</h2>
-  <div class="result-box">
-    <p style="margin-bottom:16px;">Pick any career you're interested in - we'll show exactly which skills you're missing, even if it wasn't your predicted match.</p>
-
-    <select id="targetRoleSelect" class="role-select">
-      <option value="">Select a career...</option>
-    </select>
-    <button id="checkGapBtn" class="btn-secondary" disabled>Check My Skill Gap</button>
-
-    <div id="gapResultBox" style="margin-top:20px;"></div>
   </div>
 </section>
 
