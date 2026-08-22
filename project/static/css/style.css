@@ -19,9 +19,6 @@
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{ font-family:'Poppins', sans-serif; color:var(--text-dark); }
 
-/* ============================================================
-   LOGIN / REGISTER PAGE (split screen)
-============================================================ */
 body.login-page{
   min-height:100vh;
   background:var(--bg-light);
@@ -104,123 +101,25 @@ body.login-page{
 }
 .feature-list i{ color:#A7F3D0; }
 
-/* ============================================================
-   DASHBOARD PAGE (light theme)
-============================================================ */
 body:not(.login-page){ background:var(--bg-light); }
 
-/* ================= NAVBAR ================= */
-
-nav {
-    width: 100%;
-    height: 56px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 48px;
-
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-
-    box-sizing: border-box;
+nav{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 48px; background:var(--white); border-bottom:1px solid var(--border);
 }
-
-/* LEFT SIDE - CAREERCAST */
-
-.nav-left {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
+.nav-left .logo{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; color:var(--primary); }
+.nav-right{ display:flex; align-items:center; gap:18px; }
+.nav-right .user{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--text-muted); }
+.nav-right button{
+  background:var(--primary); color:#fff; border:none; padding:9px 18px;
+  border-radius:8px; font-family:inherit; font-weight:600; font-size:13px; cursor:pointer;
 }
-
-.nav-left .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--primary);
-
-    white-space: nowrap;
+.nav-link{
+  color:var(--text-muted); text-decoration:none; font-size:13.5px;
+  display:flex; align-items:center; gap:6px;
 }
+.nav-link:hover, .nav-link.active{ color:var(--primary); }
 
-/* RIGHT SIDE */
-
-.nav-right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-
-    margin-left: auto;
-
-    flex-shrink: 0;
-}
-
-/* DASHBOARD / ANALYTICS LINKS */
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    color: var(--text-muted);
-    text-decoration: none;
-
-    font-size: 13.5px;
-    font-weight: 500;
-
-    white-space: nowrap;
-}
-
-.nav-link:hover {
-    color: var(--primary);
-}
-
-.nav-link.active {
-    color: var(--primary);
-    font-weight: 600;
-}
-
-/* USER */
-
-.nav-right .user {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    font-size: 14px;
-    color: var(--text-muted);
-
-    white-space: nowrap;
-}
-
-/* LOGOUT */
-
-.nav-right button {
-    background: var(--primary);
-    color: #fff;
-
-    border: none;
-
-    padding: 9px 18px;
-
-    border-radius: 8px;
-
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 13px;
-
-    cursor: pointer;
-
-    white-space: nowrap;
-}
-
-.nav-right button:hover {
-    opacity: 0.9;
-}
 .hero{ text-align:center; padding:56px 24px 36px; max-width:780px; margin:0 auto; }
 .badge{
   display:inline-block; background:var(--primary-light); color:var(--primary);
@@ -329,9 +228,6 @@ nav {
 .verdict-text{ font-size:15.5px; font-weight:700; }
 .verdict-text span{ color:var(--primary); }
 
-/* ============================================================
-   ANALYZING MODAL (shown while /analyze is in progress)
-============================================================ */
 .modal-overlay{
   position:fixed; inset:0; background:rgba(17,24,39,0.55);
   backdrop-filter:blur(3px);
@@ -339,7 +235,6 @@ nav {
   z-index:999; opacity:0; transition:opacity .25s ease;
 }
 .modal-overlay.show{ display:flex; opacity:1; }
-
 .modal-card{
   background:var(--white); border-radius:18px; padding:40px 44px;
   width:100%; max-width:380px; text-align:center;
@@ -348,7 +243,6 @@ nav {
   transition:transform .3s ease, opacity .3s ease;
 }
 .modal-overlay.show .modal-card{ transform:translateY(0) scale(1); opacity:1; }
-
 .modal-spinner{
   width:52px; height:52px; margin:0 auto 20px;
   border:4px solid var(--primary-light);
@@ -357,9 +251,7 @@ nav {
   animation:spin .8s linear infinite;
 }
 @keyframes spin{ to{ transform:rotate(360deg); } }
-
 .modal-card h3{ font-size:17px; font-weight:700; margin-bottom:20px; }
-
 .modal-steps{ list-style:none; text-align:left; display:flex; flex-direction:column; gap:12px; }
 .modal-steps li{
   font-size:13.5px; color:var(--text-muted); display:flex; align-items:center; gap:10px;
@@ -372,14 +264,8 @@ nav {
 .modal-steps li.done i{ color:var(--accent); }
 .modal-steps li.done i.fa-circle-notch{ display:none; }
 
-/* ============================================================
-   RESULTS - clear before/after states
-============================================================ */
 .result-box{ transition:box-shadow .3s ease, border-color .3s ease; }
-.result-box.just-updated{
-  animation:resultPulse 1s ease;
-  border-color:var(--primary);
-}
+.result-box.just-updated{ animation:resultPulse 1s ease; border-color:var(--primary); }
 @keyframes resultPulse{
   0%{ box-shadow:0 0 0 0 rgba(79,70,229,0.25); }
   100%{ box-shadow:0 0 0 14px rgba(79,70,229,0); }
@@ -389,29 +275,29 @@ nav {
   from{ opacity:0; transform:translateY(10px); }
   to{ opacity:1; transform:translateY(0); }
 }
-
 .upload-box.analyzed{ border-color:var(--accent); background:#F0FDF4; }
 .upload-box.analyzed i{ color:var(--accent); }
 
-/* ============================================================
-   MILESTONE 2 ANALYTICS DASHBOARD
-   (reuses the same --primary / --text-dark / --border variables
-   and Poppins font already defined above - no new palette)
-============================================================ */
-.nav-link{
-  color:var(--text-muted); text-decoration:none; font-size:13.5px;
-  display:flex; align-items:center; gap:6px;
-}
-.nav-link:hover{ color:var(--primary); }
-.nav-link.active {
-    color: var(--primary);
-    font-weight: 600;
-}
+.model-accuracy-section{ margin-bottom:16px; }
+.model-accuracy-title{ font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin-bottom:10px; }
+.model-accuracy-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.model-accuracy-card{ background:var(--bg-light); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+.model-accuracy-card.best{ border-color:var(--primary); background:var(--primary-light); }
+.model-accuracy-card .kpi-label{ font-size:10px; color:var(--text-muted); }
+.model-accuracy-card .model-name{ font-size:12px; font-weight:600; margin-bottom:4px; }
+.model-accuracy-card .model-score{ font-size:16px; font-weight:700; color:var(--primary); }
 
-.nav-link.active i {
-    color: var(--primary);
+/* ================= PREDICTED ROLE COMPARISON ================= */
+.compare-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; text-align:left; }
+@media(max-width:700px){ .compare-grid{ grid-template-columns:1fr; } }
+.compare-col{ background:var(--bg-light); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.compare-col h4
+{ font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; 
 }
+.compare-col.have h4{ color:#059669; }
+.compare-col.need h4{ color:#B45309; }
 
+/* ================= MILESTONE 2 ANALYTICS DASHBOARD ================= */
 .analytics-header{ max-width:1100px; margin:0 auto; padding:40px 24px 8px; }
 .analytics-header h1{
   font-size:24px; font-weight:700; display:flex; align-items:center; gap:10px;
@@ -433,6 +319,8 @@ nav {
 .card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
 .card-header h2{ font-size:15.5px; font-weight:700; }
 
+/* THIS is the critical fix - without a bounded height, Chart.js
+   renders unbounded/giant canvases */
 .chart-wrap{ position:relative; height:280px; }
 
 .top5-list{ display:flex; flex-direction:column; gap:10px; }
@@ -440,100 +328,23 @@ nav {
   display:flex; align-items:center; gap:14px; padding:11px 14px;
   background:var(--bg-light); border-radius:10px; font-size:13.5px;
 }
-.top5-row .rank{
+.top5-row .rank
+{
   width:24px; height:24px; border-radius:50%; background:var(--primary-light);
   color:var(--primary); font-weight:700; font-size:12px;
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.top5-row .role-name{ flex:1; font-weight:600; }
-.top5-row .confidence{ color:var(--primary); font-weight:700; font-size:13px; }
-
-.tsne-legend{ display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
-.legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-muted); }
-.legend-item i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
-/* ================= MODEL ACCURACY ================= */
-
-.model-accuracy-section {
-    margin-bottom: 18px;
+.top5-row .role-name
+{ flex:1; font-weight:600; 
+}
+.top5-row .confidence
+{ color:var(--primary); font-weight:700; font-size:13px; 
 }
 
-.model-accuracy-title {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 8px;
+.tsne-legend
+{ display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; 
 }
-
-.model-accuracy-list {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.model-accuracy-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-
-    border-radius: 8px;
-    padding: 8px 10px;
-}
-
-.model-accuracy-item .model-name {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text);
-}
-
-.model-accuracy-item .model-score {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-/* KPI-style model accuracy cards (Model name + Accuracy number) */
-.model-accuracy-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-}
-
-.model-accuracy-card {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    transition: border-color 0.2s ease, background 0.2s ease;
-}
-
-.model-accuracy-card.best {
-    border-color: var(--primary);
-    background: var(--primary-light);
-}
-
-.model-accuracy-card .kpi-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--accent);
-    margin-bottom: 6px;
-}
-
-.model-accuracy-card .model-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 12px;
-}
-
-.model-accuracy-card .model-score {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary);
-}
+.legend-item
+{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-muted); }
+.legend-item i
+{ width:9px; height:9px; border-radius:50%; display:inline-block; }
