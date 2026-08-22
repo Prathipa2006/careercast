@@ -12,52 +12,31 @@
 <body>
 
 <!-- ================= NAVBAR ================= -->
-
 <nav>
-    <div class="nav-left">
-        <div class="logo">
-            <i class="fa-solid fa-brain"></i>
-            CareerCast
-        </div>
+  <div class="nav-left">
+    <div class="logo"><i class="fa-solid fa-brain"></i> CareerCast</div>
+  </div>
+
+  <div class="nav-right">
+    <a href="/" class="nav-link">
+      <i class="fa-solid fa-house"></i> Dashboard
+    </a>
+    <a href="/milestone2-dashboard" class="nav-link active">
+      <i class="fa-solid fa-chart-line"></i> Analytics
+    </a>
+    <a href="/skill-gap-analysis" class="nav-link">
+      <i class="fa-solid fa-magnifying-glass-chart"></i> Skill Gap Analysis
+    </a>
+    <div class="user">
+      <i class="fa-solid fa-user"></i> {{ username }}
     </div>
-
-    <div class="nav-right">
-
-        <!-- DASHBOARD -->
-        <a href="/" class="nav-link">
-            <i class="fa-solid fa-house"></i>
-            Dashboard
-        </a>
-
-        <!-- ANALYTICS -->
-        <a href="/milestone2-dashboard" class="nav-link active">
-            <i class="fa-solid fa-chart-line"></i>
-            Analytics
-        </a>
-
-        <!-- SKILL GAP -->
-        <a href="/skill-gap-analysis" class="nav-link">
-            <i class="fa-solid fa-magnifying-glass-chart"></i>
-            Skill Gap Analysis
-        </a>
-
-        <!-- USER -->
-        <div class="user">
-            <i class="fa-solid fa-user"></i>
-            {{ username }}
-        </div>
-
-        <!-- LOGOUT -->
-        <button id="logoutBtn">
-            Logout
-        </button>
-
-    </div>
+    <button id="logoutBtn">Logout</button>
+  </div>
 </nav>
 
-
+<!-- ================= HEADER ================= -->
 <section class="analytics-header">
-  <h1><i class="fa-solid fa-chart-line"></i> CareerCast Analytics: Dashboard</h1>
+  <h1><i class="fa-solid fa-chart-line"></i> CareerCast Analytics: Milestone 2 Dashboard</h1>
   <p>Model performance, career recommendations, and skill embedding visualization.</p>
 </section>
 
@@ -65,7 +44,7 @@
 <section class="analytics-section">
   <div class="analytics-card full-width">
     <div class="card-header">
-      <h2>Model Comparison - Macro F1-Score</h2>
+      <h2>Model Comparison — Macro F1-Score</h2>
     </div>
     <div class="chart-wrap">
       <canvas id="modelComparisonChart"></canvas>
@@ -73,7 +52,7 @@
   </div>
 </section>
 
-<!-- ================= TOP-5 + T-SNE ================= -->
+<!-- ================= TOP-5 RECOMMENDATIONS + T-SNE EMBEDDINGS ================= -->
 <section class="analytics-section two-col">
 
   <div class="analytics-card">
@@ -87,7 +66,7 @@
 
   <div class="analytics-card">
     <div class="card-header">
-      <h2>t-SNE Visualization: Skill Embeddings (SBERT)</h2>
+      <h2>t-SNE Visualization — Skill Embeddings (SBERT)</h2>
     </div>
     <div class="chart-wrap">
       <canvas id="tsneChart"></canvas>
@@ -97,105 +76,6 @@
 
 </section>
 
-<script>
-const PRIMARY = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-const CLUSTER_COLORS = ["#3B82F6", "#EC4899", "#F59E0B", "#8B5CF6", "#10B981", "#EF4444"];
-
-async function loadAnalytics() {
-  const res = await fetch("/api/analytics");
-  const data = await res.json();
-
-  renderModelComparison(data.model_comparison);
-  renderTop5(data.top5);
-  renderTSNE(data.tsne);
-}
-
-function renderModelComparison(models) {
-  if (!models || models.length === 0) {
-    document.getElementById("modelComparisonChart").parentElement.innerHTML =
-      '<p class="muted">No model comparison data yet - run Cell K in your notebook to generate model_comparison.json.</p>';
-    return;
-  }
-
-  const best = Math.max(...models.map(m => m.macro_f1));
-  const colors = models.map(m => m.macro_f1 === best ? "#D97706" : PRIMARY || "#4F46E5");
-
-  new Chart(document.getElementById("modelComparisonChart"), {
-    type: "bar",
-    data: {
-      labels: models.map(m => m.model),
-      datasets: [{
-        label: "Macro F1-Score",
-        data: models.map(m => m.macro_f1),
-        backgroundColor: colors,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, max: 1 } }
-    }
-  });
-}
-
-function renderTop5(top5) {
-  const container = document.getElementById("top5List");
-  if (!top5 || top5.length === 0) return; // keep placeholder text
-
-  container.innerHTML = top5.map((r, i) => `
-    <div class="top5-row">
-      <span class="rank">${i + 1}</span>
-      <span class="role-name">${r.role}</span>
-      <span class="confidence">${r.match_percent}%</span>
-    </div>
-  `).join("");
-}
-
-function renderTSNE(points) {
-  if (!points || points.length === 0) {
-    document.getElementById("tsneChart").parentElement.innerHTML =
-      '<p class="muted">No embedding data yet - run Cell K in your notebook to generate tsne_data.json.</p>';
-    return;
-  }
-
-  const clusters = [...new Set(points.map(p => p.cluster))];
-  const datasets = clusters.map((cluster, i) => ({
-    label: cluster,
-    data: points.filter(p => p.cluster === cluster).map(p => ({ x: p.x, y: p.y, skill: p.skill })),
-    backgroundColor: CLUSTER_COLORS[i % CLUSTER_COLORS.length],
-    pointRadius: 5,
-  }));
-
-  new Chart(document.getElementById("tsneChart"), {
-    type: "scatter",
-    data: { datasets },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.raw.skill} (${ctx.dataset.label})`
-          }
-        }
-      },
-      scales: {
-        x: { title: { display: true, text: "t-SNE Component 1" } },
-        y: { title: { display: true, text: "t-SNE Component 2" } },
-      }
-    }
-  });
-
-  document.getElementById("tsneLegend").innerHTML = clusters.map((c, i) => `
-    <span class="legend-item"><i style="background:${CLUSTER_COLORS[i % CLUSTER_COLORS.length]}"></i>${c}</span>
-  `).join("");
-}
-
-const logout = document.getElementById("logoutBtn");
-if (logout) logout.addEventListener("click", () => window.location.href = "/logout");
-
-loadAnalytics();
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
