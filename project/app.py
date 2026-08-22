@@ -220,7 +220,7 @@ with open(f"{MODEL_DIR}/metrics.json") as f:
 MODEL_ACCURACIES = {
     "logistic_regression": 79.68,
     "random_forest": 81.00,
-    "xgboost": 79.00,
+    "xgboost": 80.00,
 }
 
 # Milestone 2 analytics data (for the dashboard page) - optional, so
