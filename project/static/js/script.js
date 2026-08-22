@@ -299,10 +299,51 @@ async function loadCurrentSkillsForGapPage() {
 
     currentUserSkills = data.skills;
     currentSkillsPreview.textContent = data.skills.join(", ");
+
+    renderPredictedRoleComparison(data);
   } catch (err) {
     currentSkillsPreview.textContent = "could not load";
     console.error("Could not load last analysis for skill gap page:", err);
   }
+}
+
+function renderPredictedRoleComparison(data) {
+  const box = document.getElementById("predictedGapBox");
+  if (!box) return;
+
+  // The model's top predicted role already has matched/missing skills
+  // computed by match_roles() in app.py - reuse it directly, no new
+  // backend call needed.
+  const topMatch = (data.role_matches && data.role_matches[0]) || null;
+  if (!topMatch) {
+    box.innerHTML = `<p>No role prediction available yet.</p>`;
+    return;
+  }
+
+  const haveHtml = topMatch.matched_skills.length
+    ? topMatch.matched_skills.map(s => `<span class="chip skill-chip">${s}</span>`).join("")
+    : `<span class="muted">None matched yet</span>`;
+
+  const needHtml = topMatch.missing_skills.length
+    ? topMatch.missing_skills.map(s => `<span class="chip edu-chip">${s}</span>`).join("")
+    : `<span class="muted">You already have all core skills for this role!</span>`;
+
+  box.innerHTML = `
+    <div class="verdict" style="margin-top:0; margin-bottom:20px;">
+      <div class="verdict-label">PREDICTED BEST MATCH</div>
+      <div class="verdict-text">${data.best_role} <span>${topMatch.match_percent}% match</span></div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-col have">
+        <h4>✓ Skills You Already Have</h4>
+        <div class="chip-row">${haveHtml}</div>
+      </div>
+      <div class="compare-col need">
+        <h4>+ Skills To Add</h4>
+        <div class="chip-row">${needHtml}</div>
+      </div>
+    </div>
+  `;
 }
 
 async function loadAvailableRoles() {
@@ -402,3 +443,95 @@ if (checkGapBtn) {
 
 loadAvailableRoles();
 loadCurrentSkillsForGapPage();
+
+// ----------------------------
+// MILESTONE 2 ANALYTICS DASHBOARD (moved here from inline <script>
+// for consistency with every other page)
+// ----------------------------
+const modelComparisonCanvas = document.getElementById("modelComparisonChart");
+
+if (modelComparisonCanvas) {
+  const CLUSTER_COLORS = ["#3B82F6", "#EC4899", "#F59E0B", "#8B5CF6", "#10B981", "#EF4444"];
+  const PRIMARY = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || "#4F46E5";
+
+  async function loadAnalytics() {
+    const res = await fetch("/api/analytics");
+    const data = await res.json();
+    renderModelComparison(data.model_comparison);
+    renderTop5(data.top5);
+    renderTSNE(data.tsne);
+  }
+
+  function renderModelComparison(models) {
+    if (!models || models.length === 0) {
+      modelComparisonCanvas.parentElement.innerHTML =
+        '<p class="muted">No model comparison data yet - run Cell K in your notebook to generate model_comparison.json.</p>';
+      return;
+    }
+    const best = Math.max(...models.map(m => m.macro_f1));
+    const colors = models.map(m => m.macro_f1 === best ? "#D97706" : PRIMARY);
+
+    new Chart(modelComparisonCanvas, {
+      type: "bar",
+      data: {
+        labels: models.map(m => m.model),
+        datasets: [{ label: "Macro F1-Score", data: models.map(m => m.macro_f1), backgroundColor: colors, borderRadius: 6 }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 1 } }
+      }
+    });
+  }
+
+  function renderTop5(top5) {
+    const container = document.getElementById("top5List");
+    if (!top5 || top5.length === 0) return;
+    container.innerHTML = top5.map((r, i) => `
+      <div class="top5-row">
+        <span class="rank">${i + 1}</span>
+        <span class="role-name">${r.role}</span>
+        <span class="confidence">${r.match_percent}%</span>
+      </div>
+    `).join("");
+  }
+
+  function renderTSNE(points) {
+    const tsneCanvas = document.getElementById("tsneChart");
+    if (!points || points.length === 0) {
+      tsneCanvas.parentElement.innerHTML =
+        '<p class="muted">No embedding data yet - run Cell K in your notebook to generate tsne_data.json.</p>';
+      return;
+    }
+    const clusters = [...new Set(points.map(p => p.cluster))];
+    const datasets = clusters.map((cluster, i) => ({
+      label: cluster,
+      data: points.filter(p => p.cluster === cluster).map(p => ({ x: p.x, y: p.y, skill: p.skill })),
+      backgroundColor: CLUSTER_COLORS[i % CLUSTER_COLORS.length],
+      pointRadius: 5,
+    }));
+
+    new Chart(tsneCanvas, {
+      type: "scatter",
+      data: { datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.raw.skill} (${ctx.dataset.label})` } }
+        },
+        scales: {
+          x: { title: { display: true, text: "t-SNE Component 1" } },
+          y: { title: { display: true, text: "t-SNE Component 2" } },
+        }
+      }
+    });
+
+    document.getElementById("tsneLegend").innerHTML = clusters.map((c, i) => `
+      <span class="legend-item"><i style="background:${CLUSTER_COLORS[i % CLUSTER_COLORS.length]}"></i>${c}</span>
+    `).join("");
+  }
+
+  loadAnalytics();
+}
