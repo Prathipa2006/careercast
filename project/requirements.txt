@@ -7,3 +7,6 @@ xgboost
 pypdf
 joblib
 python-docx
+fastapi
+uvicorn
+streamlit
