@@ -392,6 +392,58 @@ def match_roles(skills, top_n=3):
     return results[:top_n]
 
 
+# Detailed, skill-specific suggestions - each entry gives concrete,
+# actionable advice instead of a repeated generic template.
+SKILL_SUGGESTIONS = {
+    "python": "Build 2-3 small projects (e.g. a data pipeline or automation script) - Python is best learned by writing real code, not just tutorials.",
+    "sql": "Practice on real datasets via sites like LeetCode SQL or HackerRank - focus on joins, window functions, and query optimization.",
+    "machine learning": "Complete Andrew Ng's Machine Learning course (Coursera) and implement 2-3 models from scratch (regression, classification, clustering).",
+    "deep learning": "Work through the fast.ai course, then build one project using a real dataset (image classification or NLP) to solidify the concepts.",
+    "tensorflow": "Complete TensorFlow's official 'Get Started' tutorials, then rebuild one of your scikit-learn models using TensorFlow to compare workflows.",
+    "pytorch": "PyTorch's official 60-minute blitz tutorial is the fastest on-ramp - follow it with one small end-to-end training project.",
+    "docker": "Containerize one of your own existing projects - this teaches Docker faster than any course, since you'll hit real, practical issues.",
+    "kubernetes": "Start with Docker first if you haven't already, then try Kubernetes' official 'Kubernetes Basics' interactive tutorial.",
+    "aws": "Get the AWS Cloud Practitioner certification - it's the standard, recognized entry point and covers exactly what most job postings expect.",
+    "azure": "Microsoft's free Azure Fundamentals (AZ-900) learning path is the standard starting certification for this.",
+    "git": "Practice with a real repo - fork an open-source project, make a change, and submit a pull request to learn the full real-world workflow.",
+    "pandas": "Work through Kaggle's free 'Pandas' micro-course, then clean and analyze a messy real-world dataset end-to-end.",
+    "numpy": "Focus on array broadcasting and vectorized operations - these are what actually show up in technical interviews and real code.",
+    "statistics": "Khan Academy's Statistics course covers the fundamentals well; pair it with applying hypothesis testing on a real dataset.",
+    "data visualization": "Recreate 3-5 charts from real news/data journalism (e.g. FiveThirtyEight) using matplotlib or Tableau to build a practical eye for good visuals.",
+    "power bi": "Microsoft's free Power BI learning path plus building one real dashboard from a public dataset will cover most job requirements.",
+    "tableau": "Tableau Public is free - recreate a dashboard from Tableau's own public gallery to learn both the tool and design conventions.",
+    "excel": "Focus on pivot tables, VLOOKUP/XLOOKUP, and basic macros - these are what's actually tested in most job screenings.",
+    "html": "Build one full static webpage from scratch without a framework - this cements the fundamentals before moving to React/Angular.",
+    "css": "Try a CSS-focused challenge site like Frontend Mentor - it forces you to solve real layout problems, not just memorize syntax.",
+    "javascript": "freeCodeCamp's JavaScript course is thorough and free; follow it with a small interactive project (to-do app, calculator).",
+    "react": "Build one small app (not a tutorial clone) - a habit tracker or notes app is enough to learn components, state, and props properly.",
+    "angular": "Angular's official 'Tour of Heroes' tutorial is the standard, well-structured starting point.",
+    "django": "Django's official tutorial (the 'polls app') covers the core concepts well; follow with your own small project to reinforce it.",
+    "flask": "Flask is lightweight - the official quickstart guide plus building one small API is usually enough to become comfortable.",
+    "mongodb": "MongoDB University offers free official courses - M001 covers the essentials needed for most job requirements.",
+    "mysql": "Practice schema design and complex joins on a real dataset - this is what's actually assessed in technical screens.",
+    "rest api": "Build a small API from scratch (even with Flask/FastAPI) and consume it from a separate script - this teaches both sides of REST.",
+    "agile": "Look into the Scrum Guide (free, short) and consider the Professional Scrum Master I (PSM I) certification if job postings require it.",
+    "scrum": "Same as Agile - the official Scrum Guide is short, free, and directly referenced in most Scrum-related job requirements.",
+    "project management": "Consider Google's Project Management Certificate (Coursera) - it's practical and widely recognized by employers.",
+    "communication": "This is best demonstrated, not studied - highlight specific examples (presentations, documentation, cross-team collaboration) on your resume.",
+    "leadership": "Highlight concrete examples - mentoring, leading a project, or resolving team conflict - rather than treating this as a course to complete.",
+    "negotiation": "Practical negotiation experience (even outside work, e.g. freelance rate discussions) is more valuable here than formal coursework.",
+    "financial modeling": "Build 2-3 financial models from scratch (DCF, budget forecast) - Wall Street Prep's free resources are a solid starting point.",
+    "accounting": "Consider foundational coursework toward a recognized credential relevant to your target role (e.g. CPA-track courses) if pursuing this seriously.",
+    "auditing": "Understanding of relevant compliance frameworks (e.g. SOX) alongside accounting fundamentals strengthens this significantly.",
+}
+
+
+def get_skill_suggestion(skill, target_role):
+    """Returns a specific, actionable suggestion for a skill if we have
+    one, otherwise a sensible fallback - never repeats the exact same
+    sentence structure for every skill in a list."""
+    if skill in SKILL_SUGGESTIONS:
+        return f"**{skill.title()}**: {SKILL_SUGGESTIONS[skill]}"
+    return f"**{skill.title()}**: Not yet in our detailed guide - search for a well-reviewed beginner course or build a small project using it, since it's commonly required for {target_role} roles."
+
+
 def gap_analysis_for_target(skills, target_role):
     """
     Milestone 3 - mentor's requested feature: user says 'I'm interested
@@ -407,10 +459,7 @@ def gap_analysis_for_target(skills, target_role):
     missing = required_set - skill_set
     pct = round(len(matched) / len(required_set) * 100, 1) if required_set else 0
 
-    suggestions = [
-        f"Learn or gain hands-on experience with '{s}' - commonly required for {target_role} roles."
-        for s in sorted(missing)
-    ]
+    suggestions = [get_skill_suggestion(s, target_role) for s in sorted(missing)]
 
     return {
         "target_role": target_role,
@@ -419,6 +468,7 @@ def gap_analysis_for_target(skills, target_role):
         "missing_skills": sorted(missing),
         "suggestions": suggestions,
     }
+
 
 
 @app.route("/api/available-roles")
