@@ -25,6 +25,5 @@ Open (https://careercast-5.onrender.com))) in your browser.[deployment link upto
 - Runs the trained TF-IDF + Logistic Regression model → broad field prediction (e.g. IT, Finance)
 - Runs skill-to-role matching → specific role suggestion (e.g. Data Scientist) with match % and skill gaps
 - Frontend renders everything: highlighted skills, accuracy, ranked roles, best-match verdict
-
-## implemented random forest and xgboost
+ implemented random forest and xgboost
 
