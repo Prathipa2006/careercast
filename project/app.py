@@ -220,7 +220,7 @@ with open(f"{MODEL_DIR}/metrics.json") as f:
 MODEL_ACCURACIES = {
     "logistic_regression": 79.68,
     "random_forest": 81.00,
-    "xgboost": 80.00,
+    "xgboost": 79.00,
 }
 
 # Milestone 2 analytics data (for the dashboard page) - optional, so
@@ -387,6 +387,11 @@ def match_roles(skills, top_n=3):
             "match_percent": pct,
             "matched_skills": sorted(matched),
             "missing_skills": sorted(missing),
+            # get_skill_suggestion is defined further below in this file,
+            # but that's fine - Python resolves this by the time the
+            # function is actually CALLED (at request time), not when
+            # this file is first loaded.
+            "suggestions": [get_skill_suggestion(s, role) for s in sorted(missing)],
         })
     results.sort(key=lambda r: r["match_percent"], reverse=True)
     return results[:top_n]
@@ -407,6 +412,7 @@ SKILL_SUGGESTIONS = {
     "azure": "Microsoft's free Azure Fundamentals (AZ-900) learning path is the standard starting certification for this.",
     "git": "Practice with a real repo - fork an open-source project, make a change, and submit a pull request to learn the full real-world workflow.",
     "pandas": "Work through Kaggle's free 'Pandas' micro-course, then clean and analyze a messy real-world dataset end-to-end.",
+    "data analysis": "Pick a real public dataset (Kaggle has thousands) and answer 3-5 specific business questions with it - this is what's actually assessed, not just knowing definitions.",
     "numpy": "Focus on array broadcasting and vectorized operations - these are what actually show up in technical interviews and real code.",
     "statistics": "Khan Academy's Statistics course covers the fundamentals well; pair it with applying hypothesis testing on a real dataset.",
     "data visualization": "Recreate 3-5 charts from real news/data journalism (e.g. FiveThirtyEight) using matplotlib or Tableau to build a practical eye for good visuals.",
@@ -432,6 +438,26 @@ SKILL_SUGGESTIONS = {
     "financial modeling": "Build 2-3 financial models from scratch (DCF, budget forecast) - Wall Street Prep's free resources are a solid starting point.",
     "accounting": "Consider foundational coursework toward a recognized credential relevant to your target role (e.g. CPA-track courses) if pursuing this seriously.",
     "auditing": "Understanding of relevant compliance frameworks (e.g. SOX) alongside accounting fundamentals strengthens this significantly.",
+    "data analysis": "Work through a real, messy public dataset end-to-end (cleaning, exploring, summarizing) - Kaggle's beginner datasets are a good starting point.",
+    "big data": "Start with Apache Spark's official 'Quick Start' guide, then process a large public dataset to see why big-data tools matter over regular pandas.",
+    "ci/cd": "Set up a simple CI/CD pipeline (GitHub Actions is free and easy) for one of your own projects - this is the fastest way to actually understand it.",
+    "civil engineering": "Hands-on coursework or certification specific to your specialization (structural, transportation, etc.) is more valuable here than general study.",
+    "autocad": "Autodesk offers free AutoCAD tutorials - practice by recreating a real floor plan or technical drawing end-to-end.",
+    "content writing": "Build a small portfolio (even a personal blog) - employers in this space almost always ask to see writing samples over certifications.",
+    "curriculum design": "Look into backward design principles (start from learning outcomes) - this is the standard, widely-taught framework in this field.",
+    "customer service": "Concrete examples (conflict resolution, retention, satisfaction metrics you improved) matter far more here than formal coursework.",
+    "hadoop": "Cloudera's free tutorials are a solid starting point; understanding HDFS and MapReduce concepts matters more than memorizing commands.",
+    "java": "Build one complete small application (not just syntax exercises) - a basic CLI tool or simple API teaches far more than isolated tutorials.",
+    "linux": "Practice directly in a terminal (WSL on Windows works well) - focus on file permissions, process management, and basic shell scripting.",
+    "marketing": "Google's free Digital Marketing certification is well-recognized; pair it with running one real small campaign, even personal, to apply it.",
+    "node.js": "Build a small REST API with Express - this is the most common real-world use case and teaches the ecosystem quickly.",
+    "nursing": "Formal certification/licensure specific to your specialization is the actual requirement here, not general self-study.",
+    "patient care": "Direct clinical experience or shadowing is what's typically assessed here - highlight specific patient-care situations you've handled.",
+    "public speaking": "Toastmasters is a well-regarded, low-cost way to build this concretely, with real practice, not just theory.",
+    "sales": "Track and highlight concrete numbers (deals closed, quota attainment, pipeline generated) - this is what's actually evaluated in sales hiring.",
+    "seo": "Google's free SEO Starter Guide covers the fundamentals; practice by auditing and improving one real website's search visibility.",
+    "spark": "Databricks offers free community-edition notebooks - practice Spark's core operations on a dataset too large for regular pandas.",
+    "teaching": "A specific teaching credential or certification relevant to your subject/level is usually the actual requirement, not general coursework.",
 }
 
 
@@ -440,8 +466,8 @@ def get_skill_suggestion(skill, target_role):
     one, otherwise a sensible fallback - never repeats the exact same
     sentence structure for every skill in a list."""
     if skill in SKILL_SUGGESTIONS:
-        return f"**{skill.title()}**: {SKILL_SUGGESTIONS[skill]}"
-    return f"**{skill.title()}**: Not yet in our detailed guide - search for a well-reviewed beginner course or build a small project using it, since it's commonly required for {target_role} roles."
+        return f"<strong>{skill.title()}</strong>: {SKILL_SUGGESTIONS[skill]}"
+    return f"<strong>{skill.title()}</strong>: Search for a well-reviewed beginner course or build a small project using it, since it's commonly required for {target_role} roles."
 
 
 def gap_analysis_for_target(skills, target_role):
@@ -468,6 +494,7 @@ def gap_analysis_for_target(skills, target_role):
         "missing_skills": sorted(missing),
         "suggestions": suggestions,
     }
+
 
 
 
