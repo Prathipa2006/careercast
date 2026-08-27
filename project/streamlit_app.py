@@ -89,6 +89,56 @@ ROLE_SKILL_MAP = {
 }
 SKILLS_LIST = sorted({s for skills in ROLE_SKILL_MAP.values() for s in skills})
 
+# Detailed, skill-specific suggestions - same reference as app.py.
+# Streamlit's st.markdown() renders **bold** natively, so markdown
+# syntax is correct here (unlike the Flask frontend, which needed HTML).
+SKILL_SUGGESTIONS = {
+    "python": "Build 2-3 small projects (e.g. a data pipeline or automation script) - Python is best learned by writing real code, not just tutorials.",
+    "sql": "Practice on real datasets via sites like LeetCode SQL or HackerRank - focus on joins, window functions, and query optimization.",
+    "machine learning": "Complete Andrew Ng's Machine Learning course (Coursera) and implement 2-3 models from scratch (regression, classification, clustering).",
+    "deep learning": "Work through the fast.ai course, then build one project using a real dataset (image classification or NLP) to solidify the concepts.",
+    "tensorflow": "Complete TensorFlow's official 'Get Started' tutorials, then rebuild one of your scikit-learn models using TensorFlow to compare workflows.",
+    "pytorch": "PyTorch's official 60-minute blitz tutorial is the fastest on-ramp - follow it with one small end-to-end training project.",
+    "docker": "Containerize one of your own existing projects - this teaches Docker faster than any course, since you'll hit real, practical issues.",
+    "kubernetes": "Start with Docker first if you haven't already, then try Kubernetes' official 'Kubernetes Basics' interactive tutorial.",
+    "aws": "Get the AWS Cloud Practitioner certification - it's the standard, recognized entry point and covers exactly what most job postings expect.",
+    "azure": "Microsoft's free Azure Fundamentals (AZ-900) learning path is the standard starting certification for this.",
+    "git": "Practice with a real repo - fork an open-source project, make a change, and submit a pull request to learn the full real-world workflow.",
+    "pandas": "Work through Kaggle's free 'Pandas' micro-course, then clean and analyze a messy real-world dataset end-to-end.",
+    "data analysis": "Pick a real public dataset (Kaggle has thousands) and answer 3-5 specific business questions with it - this is what's actually assessed, not just knowing definitions.",
+    "numpy": "Focus on array broadcasting and vectorized operations - these are what actually show up in technical interviews and real code.",
+    "statistics": "Khan Academy's Statistics course covers the fundamentals well; pair it with applying hypothesis testing on a real dataset.",
+    "data visualization": "Recreate 3-5 charts from real news/data journalism (e.g. FiveThirtyEight) using matplotlib or Tableau to build a practical eye for good visuals.",
+    "power bi": "Microsoft's free Power BI learning path plus building one real dashboard from a public dataset will cover most job requirements.",
+    "tableau": "Tableau Public is free - recreate a dashboard from Tableau's own public gallery to learn both the tool and design conventions.",
+    "excel": "Focus on pivot tables, VLOOKUP/XLOOKUP, and basic macros - these are what's actually tested in most job screenings.",
+    "html": "Build one full static webpage from scratch without a framework - this cements the fundamentals before moving to React/Angular.",
+    "css": "Try a CSS-focused challenge site like Frontend Mentor - it forces you to solve real layout problems, not just memorize syntax.",
+    "javascript": "freeCodeCamp's JavaScript course is thorough and free; follow it with a small interactive project (to-do app, calculator).",
+    "react": "Build one small app (not a tutorial clone) - a habit tracker or notes app is enough to learn components, state, and props properly.",
+    "angular": "Angular's official 'Tour of Heroes' tutorial is the standard, well-structured starting point.",
+    "django": "Django's official tutorial (the 'polls app') covers the core concepts well; follow with your own small project to reinforce it.",
+    "flask": "Flask is lightweight - the official quickstart guide plus building one small API is usually enough to become comfortable.",
+    "mongodb": "MongoDB University offers free official courses - M001 covers the essentials needed for most job requirements.",
+    "mysql": "Practice schema design and complex joins on a real dataset - this is what's actually assessed in technical screens.",
+    "rest api": "Build a small API from scratch (even with Flask/FastAPI) and consume it from a separate script - this teaches both sides of REST.",
+    "ci/cd": "Set up a simple pipeline for one of your own repos using GitHub Actions - a working example teaches this faster than theory.",
+    "linux": "Practice basic shell navigation, permissions, and process management directly in a terminal - most of this is muscle memory from use.",
+    "agile": "Look into the Scrum Guide (free, short) and consider the Professional Scrum Master I (PSM I) certification if job postings require it.",
+    "scrum": "Same as Agile - the official Scrum Guide is short, free, and directly referenced in most Scrum-related job requirements.",
+    "project management": "Consider Google's Project Management Certificate (Coursera) - it's practical and widely recognized by employers.",
+    "communication": "This is best demonstrated, not studied - highlight specific examples (presentations, documentation, cross-team collaboration) on your resume.",
+}
+
+
+def get_skill_suggestion(skill, target_role):
+    """Returns a specific, actionable suggestion for a skill if we have
+    one, otherwise a sensible fallback - never repeats the exact same
+    sentence structure for every skill in a list."""
+    if skill in SKILL_SUGGESTIONS:
+        return f"**{skill.title()}**: {SKILL_SUGGESTIONS[skill]}"
+    return f"**{skill.title()}**: Look for a well-reviewed beginner course or build a small project using it - it's commonly required for {target_role} roles."
+
 
 def fix_letter_spacing(text):
     """
@@ -168,8 +218,15 @@ if "prediction_df" in st.session_state:
 
     st.subheader("Career Probability Distribution")
     num_to_show = st.slider("Number of categories to show", min_value=5, max_value=len(df), value=len(df))
+
+    # Scale chart height with the number of bars - without this, more
+    # bars get squeezed into the same fixed space and start overlapping
+    # or getting visually clipped, which LOOKS like missing categories
+    # even though the underlying data is complete.
+    chart_height = max(350, num_to_show * 28)
+
     fig = px.bar(df.head(num_to_show), x="Probability", y="Category", orientation="h",
-                 color="Probability", color_continuous_scale="Blues")
+                 color="Probability", color_continuous_scale="Blues", height=chart_height)
     st.plotly_chart(fig, use_container_width=True)
 
     st.success(f"**Best match: {top_pred['Category']}** ({top_pred['Probability']:.1f}% confidence)")
@@ -220,9 +277,19 @@ else:
         missing = required - have
         pct = round(len(matched) / len(required) * 100, 1) if required else 0
 
+        st.metric("Skill Match", f"{pct}%")
+
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Skill Match", f"{pct}%")
             st.success(f"✓ Skills you have: {', '.join(sorted(matched)) if matched else 'None yet'}")
         with col2:
-            st.warning(f"+ Skills to add: {', '.join(sorted(missing)) if missing else 'None - you have them all!'}")
+            if missing:
+                st.warning(f"+ {len(missing)} skill(s) to add - see details below")
+            else:
+                st.success("You already have all core skills for this role!")
+
+        # --- Detailed, per-skill "how to learn" suggestions ---
+        if missing:
+            st.subheader("How to close this gap")
+            for skill in sorted(missing):
+                st.markdown(f"- {get_skill_suggestion(skill, target_role)}")
