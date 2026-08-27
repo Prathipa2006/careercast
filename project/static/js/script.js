@@ -328,6 +328,10 @@ function renderPredictedRoleComparison(data) {
     ? topMatch.missing_skills.map(s => `<span class="chip edu-chip">${s}</span>`).join("")
     : `<span class="muted">You already have all core skills for this role!</span>`;
 
+  const suggestionsHtml = (topMatch.suggestions && topMatch.suggestions.length)
+    ? `<ul style="margin-top:14px; padding-left:20px;">${topMatch.suggestions.map(s => `<li style="margin-bottom:8px; font-size:13px; color:var(--text-muted);">${s}</li>`).join("")}</ul>`
+    : "";
+
   box.innerHTML = `
     <div class="verdict" style="margin-top:0; margin-bottom:20px;">
       <div class="verdict-label">PREDICTED BEST MATCH</div>
@@ -341,6 +345,7 @@ function renderPredictedRoleComparison(data) {
       <div class="compare-col need">
         <h4>+ Skills To Add</h4>
         <div class="chip-row">${needHtml}</div>
+        ${suggestionsHtml}
       </div>
     </div>
   `;
