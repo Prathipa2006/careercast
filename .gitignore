@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.db
+analytics_data.csv
+
+Resume.csv
+Resume_merged.csv
+_temp_resume.txt
+careercast.egg-info/
+confusion_matrix.png
+mlruns/

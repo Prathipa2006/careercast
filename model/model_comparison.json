@@ -1,0 +1,14 @@
+[
+  {
+    "model": "Logistic Regression",
+    "macro_f1": 0.7547
+  },
+  {
+    "model": "Random Forest",
+    "macro_f1": 0.7752
+  },
+  {
+    "model": "XGBoost",
+    "macro_f1": 0.7297
+  }
+]
