@@ -17,7 +17,7 @@ python train_model.py
 ```
 python app.py
 ```
-Open (https://careercast-5.onrender.com))) in your browser.[deployment link upto 3rd milestone have to implemnet for 4th milestone]
+Open (https://careercast-5.onrender.com))) in your browser
 
 ## What it does
 - Drag-and-drop a resume (.pdf / .docx / .txt)
