@@ -11,6 +11,6 @@ reportlab
 pypdf
 python-docx
 pytest
+gunicorn
 flask
 flask-session
-gunicorn
