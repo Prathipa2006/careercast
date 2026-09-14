@@ -11,5 +11,4 @@ reportlab
 pypdf
 python-docx
 pytest
-flask
-flask-session
+
