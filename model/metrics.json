@@ -1,13 +1,19 @@
 {
   "models": {
     "logistic_regression": {
-      "accuracy": 78.87
+      "accuracy": 84.51,
+      "train_accuracy": 87.07,
+      "gap": 0.0256
     },
     "random_forest": {
-      "accuracy": 80.08
+      "accuracy": 74.65,
+      "train_accuracy": 84.55,
+      "gap": 0.099
     },
     "xgboost": {
-      "accuracy": 79.68
+      "accuracy": 80.28,
+      "train_accuracy": 89.03,
+      "gap": 0.0875
     }
   },
   "num_test": 497,

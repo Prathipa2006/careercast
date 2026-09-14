@@ -1,14 +1,14 @@
 [
   {
     "model": "Logistic Regression",
-    "macro_f1": 0.7547
+    "macro_f1": 0.8235
   },
   {
     "model": "Random Forest",
-    "macro_f1": 0.7752
+    "macro_f1": 0.6507
   },
   {
     "model": "XGBoost",
-    "macro_f1": 0.7297
+    "macro_f1": 0.7301
   }
 ]

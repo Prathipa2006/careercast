@@ -11,3 +11,4 @@ _temp_resume.txt
 careercast.egg-info/
 confusion_matrix.png
 mlruns/
+flask_session/

@@ -201,6 +201,52 @@ function renderResults(data, container) {
     </div>
   `).join("");
 
+  // Resume Completeness Checklist - replaces the old model-accuracy
+  // cards with feedback the user can actually act on.
+  const wordCount = (data.extracted_text_preview || "").trim().split(/\s+/).filter(Boolean).length;
+  const topRole = data.role_matches && data.role_matches.length ? data.role_matches[0] : null;
+
+  const checklistItems = [
+    {
+      label: "Skills Detected",
+      pass: data.skills.length > 0,
+      detail: data.skills.length > 0
+        ? `${data.skills.length} skill${data.skills.length > 1 ? "s" : ""} found`
+        : "No recognized skills found — add a dedicated Skills section",
+    },
+    {
+      label: "Education Detected",
+      pass: data.education.length > 0,
+      detail: data.education.length > 0
+        ? data.education.join(", ")
+        : "No education keywords found — mention your degree clearly (e.g. B.Tech, MBA)",
+    },
+    {
+      label: "Resume Length",
+      pass: wordCount >= 150,
+      detail: wordCount >= 150
+        ? `${wordCount} words — good level of detail`
+        : `${wordCount} words — looks thin, consider adding more detail`,
+    },
+    {
+      label: "Strong Career Match",
+      pass: !!topRole && topRole.match_percent >= 50,
+      detail: topRole
+        ? `${topRole.role} at ${topRole.match_percent}% match`
+        : "No strong role match found",
+    },
+  ];
+
+  const checklistHtml = checklistItems.map(item => `
+    <div style="display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.06);">
+      <span style="font-size:16px; line-height:1; color:${item.pass ? "#16A34A" : "#D97706"}; flex-shrink:0;">${item.pass ? "✓" : "⚠"}</span>
+      <div>
+        <div style="font-weight:600; font-size:14px;">${item.label}</div>
+        <div style="font-size:13px; color:var(--text-muted, #666);">${item.detail}</div>
+      </div>
+    </div>
+  `).join("");
+
   container.innerHTML = `
     <div class="result-grid result-fade-in">
       <div class="result-col">
@@ -213,37 +259,9 @@ function renderResults(data, container) {
 
       <div class="result-col">
         <div class="model-accuracy-section">
-
-    <div class="model-accuracy-title">
-        Model Performance
-    </div>
-
-    <div class="model-accuracy-grid">
-
-        <div class="model-accuracy-card">
-            <div class="kpi-label">Model</div>
-            <div class="model-name">Log. Regression</div>
-            <div class="kpi-label">Accuracy</div>
-            <div class="model-score">${data.model_accuracies?.logistic_regression ?? "78.89"}%</div>
+          <div class="model-accuracy-title">Resume Completeness Checklist</div>
+          <div>${checklistHtml}</div>
         </div>
-
-        <div class="model-accuracy-card best">
-            <div class="kpi-label">Model</div>
-            <div class="model-name">Random Forest</div>
-            <div class="kpi-label">Accuracy</div>
-            <div class="model-score">${data.model_accuracies?.random_forest ?? "80.88"}%</div>
-        </div>
-
-        <div class="model-accuracy-card">
-            <div class="kpi-label">Model</div>
-            <div class="model-name">XGBoost</div>
-            <div class="kpi-label">Accuracy</div>
-            <div class="model-score">${data.model_accuracies?.xgboost ?? "80.68"}%</div>
-        </div>
-
-    </div>
-
-</div>
 
         <h4>Broad Field Prediction</h4>
         <div class="chip-row">${broadHtml}</div>
