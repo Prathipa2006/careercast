@@ -13,3 +13,4 @@ python-docx
 pytest
 flask
 flask-session
+gunicorn
