@@ -50,49 +50,80 @@ app.config["SESSION_PERMANENT"] = False
 Session(app)
 
 MODEL_DIR = "model"
-DB_PATH = "users.db"
+# Absolute path, anchored to this file's own folder - NOT the
+# terminal's current working directory. A relative "users.db" here
+# would silently create a DIFFERENT database file depending on
+# where "python app.py" is launched from, making registered
+# accounts randomly "disappear" (login fails as if the password
+# were wrong, when really the account just doesn't exist in
+# whichever users.db got created that time).
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.db")
 
 # ------------------------------------------------------------------
-# Login system - SQLite database with hashed passwords (email-based)
+# Login system - Postgres in production (persistent), SQLite locally
 # ------------------------------------------------------------------
+# WHY: Render's free tier wipes the local filesystem on every restart/
+# redeploy, so a SQLite file (users.db) there loses all registered
+# accounts. Setting a DATABASE_URL env var (Render's free Postgres
+# add-on, or any hosted Postgres) makes accounts persist permanently.
+# Locally, DATABASE_URL is simply not set, so it keeps using SQLite -
+# no change to your local dev workflow at all.
+DATABASE_URL = os.environ.get("DATABASE_URL")
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
+    # Render's internal Postgres URLs sometimes start with "postgres://"
+    # (old scheme name) - psycopg2 needs "postgresql://".
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+
+def get_db_connection():
+    """Returns a connection using whichever backend is active."""
+    if USE_POSTGRES:
+        return psycopg2.connect(DATABASE_URL)
+    return sqlite3.connect(DB_PATH)
+
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
-        )
-    """)
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if USE_POSTGRES:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+        """)
+    else:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+        """)
     conn.commit()
 
-    # If the table already existed from an OLDER version of this app
-    # (e.g. with a 'username' column instead of 'email'), fail clearly
-    # here instead of crashing later with a confusing OperationalError.
-    cols = [row[1] for row in conn.execute("PRAGMA table_info(users)")]
-    if "email" not in cols:
-        conn.close()
-        raise RuntimeError(
-            f"\n\n'{DB_PATH}' has an outdated schema (missing 'email' column) - "
-            f"it's left over from an older version of this app.\n"
-            f"FIX: stop the server, DELETE the file '{DB_PATH}' from your project "
-            f"folder, then run 'python app.py' again. A fresh database with the "
-            f"correct schema will be created automatically.\n"
-        )
-
-    # Seed two demo accounts, only if the table is empty, so restarting
-    # the app doesn't reset custom accounts you register later.
-    existing = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM users")
+    existing = cur.fetchone()[0]
     if existing == 0:
-        conn.execute("INSERT INTO users (email, password_hash) VALUES (?, ?)",
-                     ("admin@careercast.com", generate_password_hash("admin123")))
-        conn.execute("INSERT INTO users (email, password_hash) VALUES (?, ?)",
-                     ("student@careercast.com", generate_password_hash("career2026")))
+        placeholder = "%s" if USE_POSTGRES else "?"
+        cur.execute(f"INSERT INTO users (email, password_hash) VALUES ({placeholder}, {placeholder})",
+                    ("admin@careercast.com", generate_password_hash("admin123")))
+        cur.execute(f"INSERT INTO users (email, password_hash) VALUES ({placeholder}, {placeholder})",
+                    ("student@careercast.com", generate_password_hash("career2026")))
     conn.commit()
+    cur.close()
     conn.close()
 
 
 init_db()
+print(f"Login database: {'Postgres (persistent)' if USE_POSTGRES else 'SQLite (local dev, at ' + DB_PATH + ')'}")
 
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
@@ -114,16 +145,19 @@ def login():
     email = (request.form.get("email") or "").strip().lower()
     password = request.form.get("password") or ""
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    placeholder = "%s" if USE_POSTGRES else "?"
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(f"SELECT email, password_hash FROM users WHERE email = {placeholder}", (email,))
+    row = cur.fetchone()
+    cur.close()
     conn.close()
 
-    if user is None or not check_password_hash(user["password_hash"], password):
+    if row is None or not check_password_hash(row[1], password):
         return render_template("login.html", error="Invalid email or password.")
 
     session["logged_in"] = True
-    session["email"] = user["email"]
+    session["email"] = row[0]
     return redirect(url_for("home"))
 
 
@@ -144,14 +178,23 @@ def register():
     if errors:
         return render_template("register.html", errors=errors, email=email)
 
-    conn = sqlite3.connect(DB_PATH)
+    placeholder = "%s" if USE_POSTGRES else "?"
+    conn = get_db_connection()
+    cur = conn.cursor()
     try:
-        conn.execute("INSERT INTO users (email, password_hash) VALUES (?, ?)",
-                     (email, generate_password_hash(password)))
+        cur.execute(f"INSERT INTO users (email, password_hash) VALUES ({placeholder}, {placeholder})",
+                    (email, generate_password_hash(password)))
         conn.commit()
-    except sqlite3.IntegrityError:
+    except (sqlite3.IntegrityError, Exception) as e:
+        conn.rollback()
+        cur.close()
         conn.close()
-        return render_template("register.html", errors=["This email is already registered."], email=email)
+        # Postgres raises psycopg2.errors.UniqueViolation, SQLite raises
+        # sqlite3.IntegrityError - both mean "email already registered"
+        if "UNIQUE" in str(e).upper() or "unique" in str(e).lower() or isinstance(e, sqlite3.IntegrityError):
+            return render_template("register.html", errors=["This email is already registered."], email=email)
+        raise
+    cur.close()
     conn.close()
     return redirect(url_for("login"))
 

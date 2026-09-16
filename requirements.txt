@@ -14,3 +14,4 @@ pytest
 gunicorn
 flask
 flask-session
+psycopg2-binary
