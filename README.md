@@ -17,7 +17,7 @@ python train_model.py
 ```
 python app.py
 ```
-Open (https://careercast-5.onrender.com))) in your browser
+Open (https://careercast-7.onrender.com) in your browser
 
 ## What it does
 - Drag-and-drop a resume (.pdf / .docx / .txt)
